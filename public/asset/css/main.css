@@ -1,0 +1,13 @@
+nav{
+    height: 18vh;
+    display: flex;
+    background-color: #1A281F;
+    justify-content: space-around;
+    align-items: center;
+}
+
+nav a {
+    text-decoration: none;
+    color: #f9f9f9;
+    font-size: 23px;
+}
