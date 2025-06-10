@@ -54,15 +54,11 @@ class MoviesController extends Controller
 
     public function storeFromSearch(Request $request)
 {
+    $query = $request->input('query');
     $id = $request->input('id');
-
-    if (empty($id)) {
-        return redirect()->route('movies')->with('error', 'Veuillez sélectionner un film depuis les suggestions.');
-    }
-
     $tmdbApiKey = config('services.tmdb.key');
 
-    // 1. Récupérer la liste des catégories TMDb
+    // 1. Synchroniser les catégories depuis TMDb
     $genreResponse = Http::get('https://api.themoviedb.org/3/genre/movie/list', [
         'api_key' => $tmdbApiKey,
         'language' => 'fr-FR',
@@ -74,15 +70,31 @@ class MoviesController extends Controller
 
     $tmdbGenres = $genreResponse->json()['genres'] ?? [];
 
-    // Synchroniser les catégories TMDb dans ta table 'categories'
     foreach ($tmdbGenres as $genre) {
         categories::updateOrCreate(
-            ['id_cat' => $genre['id']], // id_cat = id TMDb
-            ['title_cat' => $genre['name']] // nom_cat = nom du genre
+            ['id_cat' => $genre['id']],
+            ['title_cat' => $genre['name']]
         );
     }
 
-    // 2. Récupérer le film via son ID
+    // 2. Si aucun ID, on cherche par nom
+    if (empty($id) && $query) {
+        $searchResponse = Http::get("https://api.themoviedb.org/3/search/movie", [
+            'query'    => $query,
+            'language' => 'fr-FR',
+            'api_key'  => $tmdbApiKey,
+        ]);
+
+        $firstResult = $searchResponse->json()['results'][0] ?? null;
+
+        if (!$firstResult) {
+            return redirect()->route('movies')->with('error', 'Film non trouvé.');
+        }
+
+        $id = $firstResult['id']; // Met à jour l’ID trouvé
+    }
+
+    // 3. Récupérer le film par son ID
     $response = Http::get("https://api.themoviedb.org/3/movie/{$id}", [
         'language' => 'fr-FR',
         'api_key' => $tmdbApiKey,
@@ -94,36 +106,31 @@ class MoviesController extends Controller
 
     $tmdbMovie = $response->json();
 
-    if (empty($tmdbMovie) || isset($tmdbMovie['status_code'])) {
-        return redirect()->route('movies')->with('error', 'Film non trouvé.');
-    }
-
-    // Vérifie si le film existe déjà
+    // 4. Vérification de doublon
     $existing = movies::where('tmdb_id', $tmdbMovie['id'])->first();
     if ($existing) {
         return redirect()->route('movies')->with('message', 'Film déjà enregistré.');
     }
 
-    // Récupérer casting
+    // 5. Récupérer le casting
     $castResponse = Http::get("https://api.themoviedb.org/3/movie/{$tmdbMovie['id']}/credits", [
         'api_key' => $tmdbApiKey,
         'language' => 'fr-FR',
     ]);
     $cast = collect($castResponse->json()['cast'] ?? [])->take(5)->pluck('name')->join(', ');
 
-    // Récupérer bande-annonce
+    // 6. Récupérer la bande-annonce
     $videoResponse = Http::get("https://api.themoviedb.org/3/movie/{$tmdbMovie['id']}/videos", [
         'api_key' => $tmdbApiKey,
         'language' => 'fr-FR',
     ]);
-    $trailer = collect($videoResponse->json()['results'] ?? [])
-        ->firstWhere('type', 'Trailer');
+    $trailer = collect($videoResponse->json()['results'] ?? [])->firstWhere('type', 'Trailer');
     $trailerUrl = $trailer ? 'https://www.youtube.com/watch?v=' . $trailer['key'] : null;
 
-    // Associer la première catégorie TMDb s'il y en a
+    // 7. Catégorie principale du film
     $firstGenreId = $tmdbMovie['genres'][0]['id'] ?? null;
 
-    // Enregistrer le film en base avec la bonne catégorie
+    // 8. Enregistrement du film
     movies::create([
         'tmdb_id'     => $tmdbMovie['id'],
         'slug'        => Str::slug($tmdbMovie['title'] ?? 'titre'),
@@ -134,11 +141,12 @@ class MoviesController extends Controller
         'image'       => isset($tmdbMovie['poster_path']) ? 'https://image.tmdb.org/t/p/w500' . $tmdbMovie['poster_path'] : null,
         'trailler'    => $trailerUrl,
         'avg_note'    => $tmdbMovie['vote_average'] ?? 0,
-        'id_cat'      => $firstGenreId, // correspond à id_cat dans ta table categories
+        'id_cat'      => $firstGenreId,
     ]);
 
     return redirect()->route('movies')->with('message', 'Film enregistré avec succès.');
 }
+
 public function show(string $slug, string $tmdb_id)
 {
     $movie = Movies::where('tmdb_id', $tmdb_id)->firstOrFail();

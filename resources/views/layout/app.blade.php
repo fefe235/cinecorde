@@ -26,7 +26,7 @@
         @csrf
         <div style="margin-bottom: 1em;">
             <input type="text" name="query" placeholder="Rechercher un film..." id="movie-search" autocomplete="off">
-            <input type="text" name="id" id="movie-id" >
+            <input type="text" name="id" id="movie-id" style="display: none;">
             <div id="suggestions" style="position:relative;"></div>
             <button type="submit">Rechercher</button>
         </div>

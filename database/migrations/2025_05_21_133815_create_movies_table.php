@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string("year");
             $table->text("casting");
             $table->string("image");
-            $table->string(("trailler"));
+            $table->string("trailler")->nullable();
             $table->decimal("avg_note",4,3);
             $table->foreignId('id_cat')->constrained('categories','id_cat');
             $table->timestamps();
