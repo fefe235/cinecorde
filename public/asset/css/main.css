@@ -11,3 +11,11 @@ nav a {
     color: #f9f9f9;
     font-size: 23px;
 }
+.star {
+    font-size: 2rem;
+    color: gray;
+    cursor: pointer;
+  }
+  .star.selected {
+    color: orange;
+  }

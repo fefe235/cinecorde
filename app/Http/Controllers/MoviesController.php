@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\categories;
+use App\Models\critiques;
 use App\Models\movies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -109,7 +110,8 @@ class MoviesController extends Controller
     // 4. Vérification de doublon
     $existing = movies::where('tmdb_id', $tmdbMovie['id'])->first();
     if ($existing) {
-        return redirect()->route('movies')->with('message', 'Film déjà enregistré.');
+        return to_route('movies.show', ['slug' => Str::slug($tmdbMovie['title'] ?? 'titre'), 'tmdb_id' => $tmdbMovie['id']]);
+        
     }
 
     // 5. Récupérer le casting
@@ -144,7 +146,8 @@ class MoviesController extends Controller
         'id_cat'      => $firstGenreId,
     ]);
 
-    return redirect()->route('movies')->with('message', 'Film enregistré avec succès.');
+    return to_route('movies.show', ['slug' => Str::slug($tmdbMovie['title'] ?? 'titre'), 'tmdb_id' => $tmdbMovie['id']]);
+
 }
 
 public function show(string $slug, string $tmdb_id)
@@ -157,7 +160,8 @@ public function show(string $slug, string $tmdb_id)
 
     return view('show', [
         'movie' => $movie,
-        'categories' => Categories::all()
+        'categories' => Categories::all(),
+        'critiques' => critiques::all()
     ]);
 }
 }
