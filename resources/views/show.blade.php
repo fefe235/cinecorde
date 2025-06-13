@@ -30,9 +30,9 @@
             @csrf
 
             <input type="text" name="rate" id="rate">
-            <input type="text" name="id_movie" id = "id_movie" value="{{ $movie->id_movie }}">
-            <input type="text" name="id_user" id = "id_user">
-            <textarea name="critique" id="critique"></textarea>
+            <input type="text" name="id_movie" id="id_movie" value="{{ $movie->id_movie }}">
+            <input type="text" name="id_user" id="id_user">
+            <textarea name="critique" id="critique" minlength="11"></textarea>
 
             </select>
 
@@ -41,11 +41,17 @@
         </form>
         @if ($critiques)
             @foreach ($critiques as $critique)
+                @if($critique->id_movie === $movie->id_movie)
+                    <h1>{{ $critique->note }}</h1>
+                    <p>{{ $critique->critique }}</p>
+                    <a href="{{ route('critique.edit', ['id' => $critique->id_critique]) }}">Modifier</a>
 
-                <h1>{{ $critique->note }}</h1>
-                <p>{{ $critique->critique }}</p>
+                    <form action="{{ route('critique.delete', ['id' => $critique->id_critique]) }}" method="post">
+                        @csrf
+                        <button>Supprimer</button>
+                    </form>
 
-
+                @endif
             @endforeach
         @endif
 @endsection

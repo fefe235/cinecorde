@@ -32,4 +32,36 @@ class CritiquesController extends Controller
             'movie'=> $movie
         ]);
 }
+public function edit(string $id)
+{
+    return view('edit', [
+        'critique' => critiques::findOrFail($id)
+    ]);
+}
+
+public function update(string $id, Request $request)
+{
+    $critique = critiques::findOrFail($id);
+
+    $request->validate([
+        'rate' => 'required',
+        'critique' => 'required|min:10'
+    ]);
+
+    $critique->note = $request->input('rate');
+    $critique->critique = $request->input('critique');
+    $critique->save();
+    $movie = movies::where('id_movie', $critique->id_movie)->firstOrFail();
+    return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]);
+}
+
+public function delete(string $id)
+{
+    $critique = critiques::findOrFail($id);
+    $movie = movies::where('id_movie', $critique->id_movie)->firstOrFail();
+    
+    if($critique->delete()) {
+        return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]);
+    }
+}
 }

@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 class MoviesController extends Controller
 {
     public function index() {
-        $movies = movies::all();
+        $movies = movies::orderBy('avg_note', 'desc')->get();
         return view('home', [
             'movies' => $movies,
             'categories' => categories::all()
