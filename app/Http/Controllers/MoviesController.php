@@ -14,11 +14,26 @@ class MoviesController extends Controller
     public function index() {
         $movies = movies::orderBy('avg_note', 'desc')->get();
         return view('home', [
-            'movies' => $movies,
-            'categories' => categories::all()
+            'movies' => $movies
             
         ]);
         
+    }
+    public function admin() {
+        $movies = movies::orderBy('avg_note', 'desc')->get();
+        return view('admin', [
+            'movies' => $movies
+            
+        ]);
+        
+    }
+    public function delete(string $id)
+    {
+        $movie = movies::findOrFail($id);
+        $movie->critiques()->delete();
+        if($movie->delete()) {
+            return redirect()->route('movies')->with('success', 'Le film a bien été supprimé');
+        }
     }
 
     public function autocomplete(Request $request)
@@ -152,7 +167,8 @@ class MoviesController extends Controller
 
 public function show(string $slug, string $tmdb_id)
 {
-    $movie = Movies::where('tmdb_id', $tmdb_id)->firstOrFail();
+    $critiques = critiques::with('likes')->get();
+    $movie = Movies::where('tmdb_id', $tmdb_id)->firstOrFail(); // ou ce que tu utilises
 
     if ($movie->slug !== $slug) {
         return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]);
@@ -161,7 +177,7 @@ public function show(string $slug, string $tmdb_id)
     return view('show', [
         'movie' => $movie,
         'categories' => Categories::all(),
-        'critiques' => critiques::all()
+        'critiques' => $critiques
     ]);
 }
 }

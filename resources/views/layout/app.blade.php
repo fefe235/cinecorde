@@ -25,6 +25,7 @@
         <a href="{{ route('movies') }}">top films</a>
         <a href="{{ route('actualites') }}">actualité</a>
         <a href="{{ route('categories') }}">categorie</a>
+        <a href="{{ route('top_critique') }}">top critique</a>
         <div>
             {{-- Formulaire de recherche --}}
             <form method="POST" action="{{ route('movies.search') }}">

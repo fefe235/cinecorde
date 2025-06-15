@@ -14,4 +14,14 @@ class critiques extends Model
     public $incrementing = true; // si c'est un entier auto-incrémenté
     protected $keyType = 'int';  // ou 'string' si c'est un UUID
     protected $fillable = ['note','critique','id_movie','id_user','nbr_like'];
+ 
+    public function likes()
+{
+    return $this->hasMany(Like::class, 'critique_id', 'id_critique');
+
+}
+public function user()
+{
+    return $this->belongsTo(User::class, 'id_user', 'user_id'); // adapte les colonnes si besoin
+}
 }

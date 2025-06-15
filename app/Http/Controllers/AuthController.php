@@ -15,6 +15,15 @@ class AuthController extends Controller
             return view('auth.register');
         
     }
+  
+    public function top_critique(){
+
+        $users = User::orderBy('nbr_like_total', 'desc')->get();
+        return view('topcritique',[
+            'users'=> $users
+        ]);
+    
+}
     public function registercreate(Request $request){
         $request->validate([
             'email' => 'required',
@@ -25,14 +34,15 @@ class AuthController extends Controller
         User::create([
                     'email' => $request->input("email"),
                     'name' => $request->input('name'),
+                    'role'=> 'admin',
                     'nbr_like_total'=> 0,
+                    'bool_like'=> '0',
                     'password' => Hash::make($request->input("password"))
         ]);
         return redirect()->route('auth.login');
     }
     public function login()
 {
-    
     return view('auth.login');
 }
 
@@ -51,7 +61,14 @@ public function doLogin(Request $request)
     if ($userEstValide) {
         $request->session()->regenerate();
 
+        $user = Auth::user()->get('role');
+        if($user === 'user')
+        {
         return redirect()->intended(route('movies'));
+        }else{
+        return redirect()->intended(route('admin'));
+
+        }
     }
 
     return back()->withErrors([

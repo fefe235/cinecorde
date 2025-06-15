@@ -15,4 +15,10 @@ class movies extends Model
     public function categorie(){
         return $this->belongsTo(categories::class);
     }
+
+    public function critiques()
+{
+    return $this->hasMany(critiques::class, 'id_movie', 'id_movie');
+}
+
 }

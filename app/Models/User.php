@@ -24,6 +24,7 @@ protected $keyType = 'int';
         'email',
         'password',
         'nbr_like_total',
+        'role'
     ];
 
     /**
@@ -35,12 +36,12 @@ protected $keyType = 'int';
         'password',
         'remember_token',
     ];
-
     /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
      */
+    
     protected function casts(): array
     {
         return [

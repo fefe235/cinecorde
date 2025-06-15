@@ -7,9 +7,57 @@ use App\Models\movies;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Like;
 
 class CritiquesController extends Controller
 {
+    public function dislike($id_critique)
+{
+    $userId = Auth::id();
+
+    // Trouver le like existant pour cette critique et cet utilisateur
+    $like = Like::where('critique_id', $id_critique)
+                ->where('user_id', $userId)
+                ->first();
+
+    if ($like) {
+        $like->delete();
+
+        // Optionnel : décrémenter le compteur si tu as un champ `nbr_like`
+        $critique = critiques::find($id_critique);
+        if ($critique && $critique->nbr_like > 0) {
+            $critique->decrement('nbr_like');
+            User::where('user_id', Auth::user()->user_id)->decrement('nbr_like_total');
+        }
+    }
+
+    return back()->with('success', 'Like supprimé');
+}
+    
+    public function like($id_critique) // $id_critique vient de la route
+    {
+        $userId = auth()->user()->user_id;
+    
+        // Vérifie si ce user a déjà liké cette critique
+        $alreadyLiked = Like::where('user_id', $userId)
+                            ->where('critique_id', $id_critique)
+                            ->exists();
+    
+        if (!$alreadyLiked) {
+            Like::create([
+                'user_id' => $userId,
+                'critique_id' => $id_critique, 
+            ]);
+    
+            // Incrémente le compteur de like dans la critique
+            critiques::where('id_critique', $id_critique)->increment('nbr_like');
+            User::where('user_id', Auth::user()->user_id)->increment('nbr_like_total');
+        }
+    
+        return back();
+    }
+    
+    
     public function create(Request $request)
     {
         $request->validate([
@@ -25,15 +73,13 @@ class CritiquesController extends Controller
             'id_user'=>$request->input('id_user'),
             'critique' =>  $request->input('critique'),
             'nbr_like' =>  0,
+            'bool_like'=>'0',
         ]);
         $movie = movies::where('id_movie', $request->input('id_movie'))->firstOrFail();
         $movie->avg_note = Critiques::where('id_movie', $movie->id_movie)->avg('note');
         $movie->save();
-        return view('show', [
-            'critiques' => critiques::all(),
-            'movie'=> $movie
-        ]);
-}
+        return back();
+    }
 public function edit(string $id)
 {
     return view('edit', [

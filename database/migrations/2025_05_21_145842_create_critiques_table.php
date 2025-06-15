@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('critiques', function (Blueprint $table) {
             $table->id("id_critique");
-            $table->foreignId('id_movie')->constrained('movies', 'id_movie');
+            $table->foreignId('id_movie')->constrained('movies', 'id_movie')->onDelete('cascade');
             $table->foreignId('id_user')->constrained('users','user_id');
-            $table->decimal('note',4,3);
+            $table->decimal('note',4,2);
             $table->text("critique");
             $table->integer("nbr_like");
             $table->timestamps();
