@@ -12,6 +12,7 @@
                 <p><a href="{{ $movie->trailler }}" target="_blank">🎬 Voir la bande-annonce</a></p>
             @endif
         </div>
+        @auth
         <div id="rating">
             <span class="star">&#9733;</span>
             <span class="star">&#9733;</span>
@@ -29,9 +30,9 @@
 
             @csrf
 
-            <input type="text" name="rate" id="rate">
-            <input type="text" name="id_movie" id="id_movie" value="{{ $movie->id_movie }}">
-            <input type="text" name="id_user" id="id_user">
+            <input type="text" name="rate" id="rate" style="display:none">
+            <input type="text" name="id_movie" id="id_movie" value="{{ $movie->id_movie }}" style="display:none">
+            <input type="text" name="id_user" id="id_user" value="{{ Auth::user()->user_id}}" style="display:none">
             <textarea name="critique" id="critique" minlength="11"></textarea>
 
             </select>
@@ -39,18 +40,25 @@
             <button>Envoyer</button>
 
         </form>
+        @endauth
         @if ($critiques)
             @foreach ($critiques as $critique)
                 @if($critique->id_movie === $movie->id_movie)
                     <h1>{{ $critique->note }}</h1>
                     <p>{{ $critique->critique }}</p>
+
+                    @auth
+                @if(Auth::check() && $critique->id_user === Auth::user()->user_id)
+
                     <a href="{{ route('critique.edit', ['id' => $critique->id_critique]) }}">Modifier</a>
 
                     <form action="{{ route('critique.delete', ['id' => $critique->id_critique]) }}" method="post">
                         @csrf
                         <button>Supprimer</button>
                     </form>
+                    @endauth
 
+                @endif
                 @endif
             @endforeach
         @endif

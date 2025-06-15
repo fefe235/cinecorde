@@ -10,7 +10,7 @@
 
 @foreach ($categories as $categorie)
     @php
-        $filtered = $movies->filter(fn($movie) => $movie->id_cat === $categorie->id_cat);
+        $filtered = $movies->filter(fn($movie) => $movie->id_cat === $categorie->id_cat)->sortByDesc('avg_note');
         $count = $filtered->count();
     @endphp
 

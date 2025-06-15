@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\critiques;
 use App\Models\movies;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CritiquesController extends Controller
 {
