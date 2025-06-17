@@ -3,6 +3,10 @@
 @section('content')
 <div class="container">
 @auth
+<form action="{{ route('actualites.create') }}" method="POST">
+    @csrf
+    <button type="submit">rafraichir actualité</button>
+</form>
 @foreach($movies as $movie)
     <div>
         

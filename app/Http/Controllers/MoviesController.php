@@ -74,6 +74,9 @@ class MoviesController extends Controller
     $id = $request->input('id');
     $tmdbApiKey = config('services.tmdb.key');
 
+    $ifexistcat= categories::all();
+
+    if(!$ifexistcat[0]['title_cat']){
     // 1. Synchroniser les catégories depuis TMDb
     $genreResponse = Http::get('https://api.themoviedb.org/3/genre/movie/list', [
         'api_key' => $tmdbApiKey,
@@ -92,7 +95,7 @@ class MoviesController extends Controller
             ['title_cat' => $genre['name']]
         );
     }
-
+}
     // 2. Si aucun ID, on cherche par nom
     if (empty($id) && $query) {
         $searchResponse = Http::get("https://api.themoviedb.org/3/search/movie", [
@@ -109,13 +112,14 @@ class MoviesController extends Controller
 
         $id = $firstResult['id']; // Met à jour l’ID trouvé
     }
-
+    $ifmovieid = movies::where('tmdb_id',$id)->first();
     // 3. Récupérer le film par son ID
+    if(!$ifmovieid){
     $response = Http::get("https://api.themoviedb.org/3/movie/{$id}", [
         'language' => 'fr-FR',
         'api_key' => $tmdbApiKey,
     ]);
-
+    
     if ($response->failed()) {
         return redirect()->route('movies')->with('error', 'Erreur lors de la récupération du film.');
     }
@@ -160,8 +164,10 @@ class MoviesController extends Controller
         'avg_note'    => $tmdbMovie['vote_average'] ?? 0,
         'id_cat'      => $firstGenreId,
     ]);
-
     return to_route('movies.show', ['slug' => Str::slug($tmdbMovie['title'] ?? 'titre'), 'tmdb_id' => $tmdbMovie['id']]);
+
+    }
+    return to_route('movies.show', ['slug' => Str::slug($ifmovieid->movie_title ?? 'titre'), 'tmdb_id' => $ifmovieid->tmdb_id]);
 
 }
 

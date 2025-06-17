@@ -24,6 +24,7 @@ Route::post('/critique/{id}/delete', [CritiquesController::class, 'delete'])->mi
 Route::post('/critique/{id}/like', [CritiquesController::class, 'like'])->name('critique.like');
 Route::post('/critique/{id}/dislike', [CritiquesController::class, 'dislike'])->name('critique.dislike');
 Route::get('/filmActualites',[NewsController::class,'index'])->name('actualites');
+Route::post('/filmActualitescreate',[NewsController::class,'create'])->middleware('auth')->name('actualites.create');
 Route::get('/filmCategories',[CategoriesController::class,'index'])->name('categories');
 Route::get('/topcritique',[AuthController::class,'top_critique'])->name('top_critique');
 Route::get('/inscription', [AuthController::class, 'register'])->name('auth.register');

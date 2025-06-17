@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('news', function (Blueprint $table) {
             $table->id('id_news');
-            $table->foreignId("id_movie")->constrained("movies","id_movie");
             $table->string("title_news");
             $table->text("news");
+            $table->dateTime('release_date');
             $table->string('image');
             $table->timestamps();
         });

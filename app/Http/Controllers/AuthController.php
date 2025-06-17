@@ -61,8 +61,8 @@ public function doLogin(Request $request)
     if ($userEstValide) {
         $request->session()->regenerate();
 
-        $user = Auth::user()->get('role');
-        if($user === 'user')
+        $user = Auth::user()->role;
+        if($user == 'user')
         {
         return redirect()->intended(route('movies'));
         }else{
