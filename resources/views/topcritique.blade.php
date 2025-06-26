@@ -2,16 +2,14 @@
 
 @section('content')
 <div class="container">
-@foreach($users as $user)
-    <div>
-        <ul>
-            <li>
-                <h3>pseado:{{ $user->name }}</h3>
-                <h3>nombre total de like:{{ $user->nbr_like_total }}</h3>
-            </li>
-        </ul>
-        
-    </div>
-@endforeach
+  <ol class="top-critique-list">
+    @foreach($users as $index => $user)
+      <li class="top-critique-item">
+        <span class="top-critique-rank">{{ $index + 1 }}</span>
+        <h3>{{ $user->name }} — {{ $user->nbr_like_total }} like{{ $user->nbr_like_total > 1 ? 's' : '' }}</h3>
+      </li>
+    @endforeach
+  </ol>
 </div>
 @endsection
+

@@ -26,9 +26,38 @@ class AuthController extends Controller
 }
     public function registercreate(Request $request){
         $request->validate([
-            'email' => 'required',
-            'name'=>'required',
-            'password'=>'required|min:4'
+            'email' => 'required|unique:users,email',
+            'name' => 'required|unique:users,name',
+            'password' => 'required|min:4|confirmed',
+        ], [
+            'name.required' => 'Le nom est obligatoire.',
+            'name.unique' => 'Ce nom est déjà utilisé, merci d’en choisir un autre.',
+            'email.required' => 'L’email est obligatoire.',
+            'email.email' => 'Merci d’entrer un email valide.',
+            'email.unique' => 'Cet email est déjà utilisé.',
+        ]);
+
+        User::create([
+                    'email' => $request->input("email"),
+                    'name' => $request->input('name'),
+                    'role'=> 'user',
+                    'nbr_like_total'=> 0,
+                    'bool_like'=> '0',
+                    'password' => Hash::make($request->input("password"))
+        ]);
+        return redirect()->route('auth.login');
+    }
+    public function registercreateAd(Request $request){
+        $request->validate([
+            'email' => 'required|unique:users,email',
+            'name' => 'required|unique:users,name',
+            'password' => 'required|min:4|confirmed',
+        ], [
+            'name.required' => 'Le nom est obligatoire.',
+            'name.unique' => 'Ce nom est déjà utilisé, merci d’en choisir un autre.',
+            'email.required' => 'L’email est obligatoire.',
+            'email.email' => 'Merci d’entrer un email valide.',
+            'email.unique' => 'Cet email est déjà utilisé.',
         ]);
 
         User::create([
@@ -39,7 +68,7 @@ class AuthController extends Controller
                     'bool_like'=> '0',
                     'password' => Hash::make($request->input("password"))
         ]);
-        return redirect()->route('auth.login');
+        return back()->with('success', 'Nouvel admin ajouté avec succès.');
     }
     public function login()
 {
@@ -72,8 +101,8 @@ public function doLogin(Request $request)
     }
 
     return back()->withErrors([
-        'email' => 'L’email ou le mot de passe est invalide'
-    ]);
+        'login_error' => 'Email ou mot de passe incorrect.',
+    ])->withInput();
 }
 public function logout(Request $request)
 {

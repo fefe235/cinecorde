@@ -76,7 +76,7 @@ class MoviesController extends Controller
 
     $ifexistcat= categories::all();
 
-    if(!$ifexistcat[0]['title_cat']){
+    if(empty($ifexistcat)){
     // 1. Synchroniser les catégories depuis TMDb
     $genreResponse = Http::get('https://api.themoviedb.org/3/genre/movie/list', [
         'api_key' => $tmdbApiKey,
@@ -114,7 +114,7 @@ class MoviesController extends Controller
     }
     $ifmovieid = movies::where('tmdb_id',$id)->first();
     // 3. Récupérer le film par son ID
-    if(!$ifmovieid){
+    if(empty($ifmovieid)){
     $response = Http::get("https://api.themoviedb.org/3/movie/{$id}", [
         'language' => 'fr-FR',
         'api_key' => $tmdbApiKey,
@@ -148,8 +148,31 @@ class MoviesController extends Controller
     $trailer = collect($videoResponse->json()['results'] ?? [])->firstWhere('type', 'Trailer');
     $trailerUrl = $trailer ? 'https://www.youtube.com/watch?v=' . $trailer['key'] : null;
 
-    // 7. Catégorie principale du film
-    $firstGenreId = $tmdbMovie['genres'][0]['id'] ?? null;
+    // 7. Catégorie principale du film (ou catégorie par défaut si absente)
+    $firstGenreId = null;
+
+    if (!empty($tmdbMovie['genres'])) {
+        $genreId = $tmdbMovie['genres'][0]['id'];
+        $category = categories::where('id_cat', $genreId)->first();
+    
+        if (!$category) {
+            // Créer la catégorie manquante
+            $category = categories::create([
+                'id_cat' => $genreId,
+                'title_cat' => $tmdbMovie['genres'][0]['name'] ?? 'Inconnu',
+            ]);
+        }
+    
+        $firstGenreId = $category->id_cat;
+    } else {
+        // Catégorie de secours
+        $defaultCat = categories::firstOrCreate(
+            ['id_cat' => 9999],
+            ['title_cat' => 'Non classé']
+        );
+        $firstGenreId = $defaultCat->id_cat;
+    }
+    
 
     // 8. Enregistrement du film
     movies::create([

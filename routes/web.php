@@ -29,6 +29,7 @@ Route::get('/filmCategories',[CategoriesController::class,'index'])->name('categ
 Route::get('/topcritique',[AuthController::class,'top_critique'])->name('top_critique');
 Route::get('/inscription', [AuthController::class, 'register'])->name('auth.register');
 Route::post('/inscription', [AuthController::class, 'registercreate'])->name('auth.registercreate');
+Route::post('/inscriptionAdmin', [AuthController::class, 'registercreateAd'])->name('auth.registercreateAd');
 Route::get('/connexion', [AuthController::class, 'login'])->name('auth.login');
 Route::post('/connexion', [AuthController::class, 'doLogin'])->name('auth.doLogin');
 Route::post('/deconnexion', [AuthController::class, 'logout'])->name('auth.logout');
