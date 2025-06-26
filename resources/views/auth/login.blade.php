@@ -14,6 +14,10 @@
                 </div>
             @endif
             <button type="submit">Se connecter</button>
+            <a href="{{ route('google.redirect') }}" class="btn btn-outline-primary">
+    Connexion avec Google
+</a>
         </form>
+    
     </div>
 @endsection

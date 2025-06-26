@@ -33,4 +33,6 @@ Route::post('/inscriptionAdmin', [AuthController::class, 'registercreateAd'])->n
 Route::get('/connexion', [AuthController::class, 'login'])->name('auth.login');
 Route::post('/connexion', [AuthController::class, 'doLogin'])->name('auth.doLogin');
 Route::post('/deconnexion', [AuthController::class, 'logout'])->name('auth.logout');
+Route::get('/auth/redirect/google', [AuthController::class, 'redirectToGoogle'])->name('google.redirect');
+Route::get('/auth/callback/google', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 

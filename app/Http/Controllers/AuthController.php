@@ -8,6 +8,7 @@ use Auth;
 use finfo;
 use Hash;
 use Illuminate\Http\Request;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -15,7 +16,7 @@ class AuthController extends Controller
             return view('auth.register');
         
     }
-  
+
     public function top_critique(){
 
         $users = User::orderBy('nbr_like_total', 'desc')->get();
@@ -110,5 +111,33 @@ public function logout(Request $request)
     $request->session()->invalidate();
     $request->session()->regenerateToken();
     return to_route('movies');
+}
+public function redirectToGoogle()
+{
+    return Socialite::driver('google')->redirect();
+}
+
+public function handleGoogleCallback()
+{
+    try {
+        $googleUser = Socialite::driver('google')->stateless()->user();
+
+        $user = User::firstOrCreate(
+            ['email' => $googleUser->getEmail()],
+            [
+                'name' => $googleUser->getName(),
+                'password' => bcrypt(uniqid()), // mot de passe aléatoire
+                'role' => 'user',
+                'nbr_like_total' => 0,
+                'bool_like' => 0,
+            ]
+        );
+
+        Auth::login($user);
+        return redirect()->intended(route($user->role === 'admin' ? 'admin' : 'movies'));
+
+    } catch (\Exception $e) {
+        return redirect()->route('auth.login')->withErrors(['login_error' => 'Échec de la connexion avec Google.']);
+    }
 }
 }
