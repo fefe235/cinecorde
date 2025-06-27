@@ -64,7 +64,7 @@ class CritiquesController extends Controller
             'rate' => 'required',
             'id_movie' => 'required',
             'id_user' => 'required',
-            'critique' => 'required|min:10'
+            'critique' => 'required|min:10|max:1000'
         ]);
         $userId = auth()->id();
         $movieId = $request->input('id_movie');

@@ -1,12 +1,11 @@
 <?php
 
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\CritiquesController;
 use App\Http\Controllers\MoviesController;
 use App\Http\Controllers\NewsController;
-use App\Http\Middleware\Auth;
-use GuzzleHttp\Middleware;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/autocomplete-movies', [MoviesController::class, 'autocomplete'])->name('movies.auto');
@@ -35,4 +34,11 @@ Route::post('/connexion', [AuthController::class, 'doLogin'])->name('auth.doLogi
 Route::post('/deconnexion', [AuthController::class, 'logout'])->name('auth.logout');
 Route::get('/auth/redirect/google', [AuthController::class, 'redirectToGoogle'])->name('google.redirect');
 Route::get('/auth/callback/google', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
+
+Route::middleware('auth')->group(function () {
+        Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+        Route::post('/chat/{user_id}', [ChatController::class, 'store'])->name('chat.store');
+        Route::get('/chat/{to_id}', [App\Http\Controllers\ChatController::class, 'showChat'])->name('chat.show');
+
+});
 

@@ -31,6 +31,7 @@
         <li><a href="{{ route('actualites') }}" class="nav-link px-2">actualités</a></li>
         <li><a href="{{ route('categories') }}" class="nav-link px-2">categories</a></li>
         <li><a href="{{ route('top_critique') }}" class="nav-link px-2">top critiques</a></li>
+        <li><a href="{{ route('chat.index') }}" class="nav-link px-2">Messagerie</a></li>
         </ul>
         
         <div class="col-md-3 text-end" style="margin-top: 20px;">
