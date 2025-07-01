@@ -18,7 +18,7 @@ class AuthController extends Controller
     }
 
     public function top_critique(){
-
+        //avoir les utilisateur avec le plus de like
         $users = User::orderBy('nbr_like_total', 'desc')->get();
         return view('topcritique',[
             'users'=> $users
@@ -26,6 +26,7 @@ class AuthController extends Controller
     
 }
     public function registercreate(Request $request){
+        //formulaire d'inscription
         $request->validate([
             'email' => 'required|unique:users,email',
             'name' => 'required|unique:users,name',
@@ -49,6 +50,7 @@ class AuthController extends Controller
         return redirect()->route('auth.login');
     }
     public function registercreateAd(Request $request){
+        //formulaire d'inscription pour un admin
         $request->validate([
             'email' => 'required|unique:users,email',
             'name' => 'required|unique:users,name',
@@ -78,6 +80,7 @@ class AuthController extends Controller
 
 public function doLogin(Request $request)
 {
+    //verifie l'email et le pwd
     $request->validate([
         'email' => 'required',
         'password' => 'required|min:4'
@@ -87,12 +90,13 @@ public function doLogin(Request $request)
         'email' => $request->input('email'),
         'password' => $request->input('password')
     ]);
-
+    //creer une session admin ou user
     if ($userEstValide) {
         $request->session()->regenerate();
 
         $user = Auth::user()->role;
-        if($user == 'user')
+        //redirection vers la bonne page
+        if($user === 'user')
         {
         return redirect()->intended(route('movies'));
         }else{
@@ -112,6 +116,7 @@ public function logout(Request $request)
     $request->session()->regenerateToken();
     return to_route('movies');
 }
+//google OAUTH
 public function redirectToGoogle()
 {
     return Socialite::driver('google')->redirect();

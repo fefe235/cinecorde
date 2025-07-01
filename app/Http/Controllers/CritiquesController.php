@@ -23,7 +23,7 @@ class CritiquesController extends Controller
         if ($like) {
             $like->delete();
 
-            // Optionnel : décrémenter le compteur si tu as un champ `nbr_like`
+            // décrémenter le compteur si tu as un champ `nbr_like`
             $critique = critiques::find($id_critique);
             if ($critique && $critique->nbr_like > 0) {
                 $critique->decrement('nbr_like');
@@ -60,6 +60,7 @@ class CritiquesController extends Controller
 
     public function create(Request $request)
     {
+        //verifier la critique
         $request->validate([
             'rate' => 'required',
             'id_movie' => 'required',
@@ -68,7 +69,7 @@ class CritiquesController extends Controller
         ]);
         $userId = auth()->id();
         $movieId = $request->input('id_movie');
-
+        //verifier si l'utilisateur a deja critiqué
         $existingCritique = critiques::where('id_user', $userId)
             ->where('id_movie', $movieId)
             ->first();
@@ -76,6 +77,7 @@ class CritiquesController extends Controller
         if ($existingCritique) {
             return back()->with('error', 'Vous avez déjà posté une critique pour ce film.');
         }
+        //mets la critique dans la base de données
         critiques::create([
             'note' => $request->input('rate'),
             'id_movie' => $request->input('id_movie'),
@@ -84,6 +86,7 @@ class CritiquesController extends Controller
             'nbr_like' => 0,
             'bool_like' => '0',
         ]);
+        //mets a jour la note moyenne du film
         $movie = movies::where('id_movie', $request->input('id_movie'))->firstOrFail();
         $movie->avg_note = Critiques::where('id_movie', $movie->id_movie)->avg('note');
         $movie->save();
@@ -98,17 +101,21 @@ class CritiquesController extends Controller
 
     public function update(string $id, Request $request)
     {
+        //chercher la critique dans la base
         $critique = critiques::findOrFail($id);
-
+        //valider la critique saisie
         $request->validate([
             'rate' => 'required',
-            'critique' => 'required|min:10'
+            'critique' => 'required|min:10|max:264'
         ]);
-
+        //metre a jour les info de la critique
         $critique->note = $request->input('rate');
         $critique->critique = $request->input('critique');
         $critique->save();
+        //metre a jour la note du film
         $movie = movies::where('id_movie', $critique->id_movie)->firstOrFail();
+        $movie->avg_note = Critiques::where('id_movie', $movie->id_movie)->avg('note');
+        $movie->save();
         return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]);
     }
 
@@ -116,7 +123,7 @@ class CritiquesController extends Controller
     {
         $critique = critiques::findOrFail($id);
         $movie = movies::where('id_movie', $critique->id_movie)->firstOrFail();
-
+        //supprimer crtique
         if ($critique->delete()) {
             return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]);
         }

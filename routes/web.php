@@ -38,7 +38,7 @@ Route::get('/auth/callback/google', [AuthController::class, 'handleGoogleCallbac
 Route::middleware('auth')->group(function () {
         Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
         Route::post('/chat/{user_id}', [ChatController::class, 'store'])->name('chat.store');
-        Route::get('/chat/{to_id}', [App\Http\Controllers\ChatController::class, 'showChat'])->name('chat.show');
+        Route::get('/chat/{to_id}', [ChatController::class, 'showChat'])->name('chat.show');
 
 });
 

@@ -6,7 +6,7 @@
         @for ($i = 1; $i <= $critique->note; $i++)
             <span class="star selected" data-value="{{ $i }}">&#9733;</span>
         @endfor
-        @for ($i = $critique->note; $i <= 10; $i++)
+        @for ($i = $critique->note+1; $i <= 10; $i++)
             <span class="star" data-value="{{ $i }}">&#9733;</span>
         @endfor
     </div>

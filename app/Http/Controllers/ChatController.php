@@ -44,6 +44,7 @@ class ChatController extends Controller
 
     public function store(Request $request)
     {
+        //mets les messages dans la base de donnees
         $user_id = $request->input('to_id');
         $request->validate([
             'message' => 'required|string|max:1000',
