@@ -10,7 +10,7 @@ stars.forEach((star, index) => {
         for (let i = 0; i <= index; i++) {
             stars[i].classList.add("selected");
         }
-        document.querySelector("#rate").value = index+1;
+        document.querySelector("#rate").value = index;
     });
 });
 

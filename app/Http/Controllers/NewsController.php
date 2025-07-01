@@ -33,7 +33,8 @@ class NewsController extends Controller
                 "image"     => $film['poster_path'],
                 "release_date"=>$film['release_date']
             ]);
+
         }
-        return $this->index();
+        return redirect()->route("actualites");
     }
 }
