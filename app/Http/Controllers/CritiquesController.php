@@ -106,7 +106,7 @@ class CritiquesController extends Controller
         //valider la critique saisie
         $request->validate([
             'rate' => 'required',
-            'critique' => 'required|min:10|max:264'
+            'critique' => 'required|min:10|max:1000'
         ]);
         //metre a jour les info de la critique
         $critique->note = $request->input('rate');
