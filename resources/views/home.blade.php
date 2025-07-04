@@ -1,6 +1,8 @@
 @extends('layout.app')
 
 @section('content')
+
+<!-- affiche les films par note -->
 <div class="top-films">
   @foreach($movies as $index => $movie)
     <div class="top-film-card">
