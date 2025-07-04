@@ -202,7 +202,6 @@ class MoviesController extends Controller
 
     public function show(string $slug, string $tmdb_id)
     {
-        $critiques = critiques::with('likes')->get();
         $movie = Movies::where('tmdb_id', $tmdb_id)->firstOrFail(); // ou ce que tu utilises
     
         // Récupérer toutes les critiques du film avec les relations
@@ -220,8 +219,9 @@ class MoviesController extends Controller
                 ->whereIn('critique_id', $critiques->pluck('id_critique'))
                 ->pluck('critique_id')
                 ->toArray();
-    
+            
             $userLikedCritiques = array_flip($liked); // Pour un accès rapide via isset()
+            
         }
         if ($movie->slug !== $slug) {
             return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]);

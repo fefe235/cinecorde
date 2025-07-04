@@ -48,12 +48,12 @@
                     <h1>{{ $critique->note }}</h1>
                     <p>{{ $critique->critique }}</p>
                     <p>Likes : {{ $critique->likes->count() }}</p>
-
+                    <!-- verifie si chaque utilisateur a liker ou non chaques critiques -->
                     @auth
                     @php
                     $userLiked = isset($userLikedCritiques[$critique->id_critique]);
-                @endphp
-
+                    @endphp
+                        <!-- affiche ensuite le bouton like ou dislike -->
                         @if(!$userLiked)
                             <form action="{{ route('critique.like', ['id' => $critique->id_critique]) }}" method="POST" style="display:inline;">
                                 @csrf
@@ -65,7 +65,7 @@
                                 <button type="submit" class="dislike-button">👎 Dislike</button>
                             </form>
                         @endif
-
+                        <!-- supprimer critique -->
                         @if(Auth::check() && $critique->id_user === Auth::user()->user_id)
                             <a href="{{ route('critique.edit', ['id' => $critique->id_critique]) }}">Modifier</a>
                             <form action="{{ route('critique.delete', ['id' => $critique->id_critique]) }}" method="post" style="display:inline;">

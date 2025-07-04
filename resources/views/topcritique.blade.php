@@ -1,6 +1,7 @@
 @extends('layout.app')
 
 @section('content')
+<!-- affiche tout les utilisateur par nombre de likes -->
 <div class="container">
   <ol class="top-critique-list">
     @foreach($users as $index => $user)

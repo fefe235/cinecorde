@@ -2,8 +2,8 @@
 @section('title', 'Catégories - Cinecorde')
 
 @section('content')
-<h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 1rem;">🎬 Classement des films par catégorie</h1>
-
+<h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 1rem;"> Classement des films par catégorie</h1>
+<!-- affiche les films par categories et par notes utilisation de alpine.js pour l'accordéon -->
 @foreach ($categories as $categorie)
     @php
         $filtered = $movies->filter(fn($movie) => $movie->id_cat === $categorie->id_cat)->sortByDesc('avg_note');
@@ -14,8 +14,7 @@
         <button @click="open = !open" class="category-button">
             {{ $categorie->title_cat }} ({{ $count }} film{{ $count > 1 ? 's' : '' }})
             <svg :class="{ 'rotate': open }" class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M19 9l-7 7-7-7"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
         </button>
 
