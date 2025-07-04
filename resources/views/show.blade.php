@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-
+    <!-- affiche le détail d'un film -->
     <div class="movie-header">
         <img src="{{ $movie->image }}" alt="{{ $movie->movie_title }}">
         <div class="movie-details">
@@ -15,7 +15,7 @@
             @endif
         </div>
     </div>
-
+<!-- bouton supprimer pour l'admin -->
     @auth
         @if(Auth()->user()->role === "admin")
             <form action="{{ route('movies.delete', ['id' =>$movie->id_movie]) }}" method="post">
@@ -23,13 +23,13 @@
                 <button type="submit">Supprimer</button>
             </form>
         @endif
-
+<!-- note avec des étoile lié au formulaire -->
         <div id="rating">
             @for ($i = 1; $i <= 10; $i++)
                 <span class="star" data-value="{{ $i }}">&#9733;</span>
             @endfor
         </div>
-
+<!-- formulaire de la critique -->
         <form action="{{ route('critique.create') }}" method="post">
             @csrf
             <input type="hidden" name="rate" id="rate">
@@ -39,7 +39,7 @@
             <button type="submit">Envoyer</button>
         </form>
     @endauth
-
+    <!-- afficher les critiques -->
     @if ($critiques)
         @foreach ($critiques as $critique)
             @if($critique->id_movie === $movie->id_movie)
@@ -50,11 +50,9 @@
                     <p>Likes : {{ $critique->likes->count() }}</p>
 
                     @auth
-                        @php
-                        $userLiked = \App\Models\Like::where('user_id', Auth::user()->user_id)
-                            ->where('critique_id', $critique->id_critique)
-                            ->exists();
-                        @endphp
+                    @php
+                    $userLiked = isset($userLikedCritiques[$critique->id_critique]);
+                @endphp
 
                         @if(!$userLiked)
                             <form action="{{ route('critique.like', ['id' => $critique->id_critique]) }}" method="POST" style="display:inline;">

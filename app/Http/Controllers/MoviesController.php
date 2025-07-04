@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\categories;
 use App\Models\critiques;
+use App\Models\Like;
 use App\Models\movies;
+use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -107,8 +109,8 @@ class MoviesController extends Controller
                 'language' => 'fr-FR',
                 'api_key' => $tmdbApiKey,
             ]);
-            
-        
+
+
             $firstResult = $searchResponse->json()['results'][0] ?? null;
             if (empty($firstResult)) {
                 return redirect()->route('movies')->with('error', 'Film non trouvé.');
@@ -202,7 +204,25 @@ class MoviesController extends Controller
     {
         $critiques = critiques::with('likes')->get();
         $movie = Movies::where('tmdb_id', $tmdb_id)->firstOrFail(); // ou ce que tu utilises
-
+    
+        // Récupérer toutes les critiques du film avec les relations
+        $critiques = critiques::with(['user', 'likes'])
+            ->where('id_movie', $movie->id_movie)
+            ->get();
+    
+        $userLikedCritiques = [];
+    
+        if (Auth::check()) {
+            $userId = Auth::user()->user_id;
+    
+            // Récupérer tous les likes de l'utilisateur pour les critiques de ce film
+            $liked = Like::where('user_id', $userId)
+                ->whereIn('critique_id', $critiques->pluck('id_critique'))
+                ->pluck('critique_id')
+                ->toArray();
+    
+            $userLikedCritiques = array_flip($liked); // Pour un accès rapide via isset()
+        }
         if ($movie->slug !== $slug) {
             return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]);
         }
@@ -210,7 +230,8 @@ class MoviesController extends Controller
         return view('show', [
             'movie' => $movie,
             'categories' => Categories::all(),
-            'critiques' => $critiques
+            'critiques' => $critiques,
+            'userLikedCritiques' => $userLikedCritiques
         ]);
     }
 }
