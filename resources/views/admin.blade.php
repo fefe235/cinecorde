@@ -2,12 +2,13 @@
 
 @section('content')
 <div class="container admin-container">
+    <!-- rafraichir actualité -->
   @auth
   <form action="{{ route('actualites.create') }}" method="POST" class="admin-refresh-form">
       @csrf
       <button type="submit" class="btn-refresh">Rafraîchir actualité</button>
   </form>
-
+    <!-- afficher tout les film par note avec la route movies.delete -->
   <div class="admin-movie-list">
     @foreach($movies as $movie)
       <div class="admin-movie-card">

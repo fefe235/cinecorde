@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\categories;
 use App\Models\movies;
-use Illuminate\Http\Request;
+
 
 class CategoriesController extends Controller
 {

@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Categorie;
 use App\Models\User;
 use Auth;
-use finfo;
 use Hash;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;

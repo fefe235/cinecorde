@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\news;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Http\Request;
 
 class NewsController extends Controller
 {

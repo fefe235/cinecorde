@@ -3,11 +3,10 @@
 @section('content')
 <div class="container mt-4">
     <h2>Conversation avec {{ $user->name }}</h2>
-
+    <!-- affiche tout les messages par utilisateurs -->
     <div class="chat-box border rounded p-3 mb-4" style="max-height: 400px; overflow-y: auto; background-color: #f8f9fa;">
         @foreach ($messages as $msg)
-            <div class="mb-3 d-flex flex-column 
-                {{ $msg->from_id == Auth::id() ? 'align-items-end' : 'align-items-start' }}">
+            <div class="mb-3 d-flex flex-column {{ $msg->from_id == Auth::id() ? 'align-items-end' : 'align-items-start' }}">
                 
                 <small class="text-muted">{{ $msg->created_at->format('H:i') }}</small>
 
