@@ -80,7 +80,7 @@ public function doLogin(Request $request)
 {
     //verifie l'email et le pwd
     $request->validate([
-        'email' => 'required',
+        'email' => 'required|email',
         'password' => 'required|min:4'
     ]);
 
