@@ -131,7 +131,6 @@ class MoviesController extends Controller
             }
 
             $tmdbMovie = $response->json();
-
             //  Vérification de doublon
             $existing = movies::where('tmdb_id', $tmdbMovie['id'])->first();
             if (isset($existing)) {
@@ -157,42 +156,51 @@ class MoviesController extends Controller
             //  Catégorie principale du film (ou catégorie par défaut si absente)
             $firstGenreId = null;
 
-            if (!empty($tmdbMovie['genres'])) {
-                $genreId = $tmdbMovie['genres'][0]['id'];
-                $category = categories::where('id_cat', $genreId)->first();
+            $genreResponse = Http::get('https://api.themoviedb.org/3/genre/movie/list', [
+                'api_key' => $tmdbApiKey,
+                'language' => 'fr-FR',
+            ]);
 
-                if (!$category) {
-                    // Créer la catégorie manquante
-                    $category = categories::create([
-                        'id_cat' => $genreId,
-                        'title_cat' => $tmdbMovie['genres'][0]['name'] ?? 'Inconnu',
-                    ]);
-                }
-
-                $firstGenreId = $category->id_cat;
-            } else {
-                // Catégorie de secours
-                $defaultCat = categories::firstOrCreate(
-                    ['id_cat' => 9999],
-                    ['title_cat' => 'Non classé']
-                );
-                $firstGenreId = $defaultCat->id_cat;
+            if ($genreResponse->failed()) {
+                return redirect()->route('movies')->with('error', 'Erreur lors de la récupération des catégories.');
             }
 
+            $tmdbGenres = $genreResponse->json()['genres'] ?? [];
+
+            foreach ($tmdbGenres as $genre) {
+                categories::updateOrCreate(
+                    ['id_cat' => $genre['id']],
+                    ['title_cat' => $genre['name']]
+                );
+            }
+            $genreIds = [];
+            if (!empty($tmdbMovie['genres'])) {
+                foreach ($tmdbMovie['genres'] as $genre) {
+                    $category = categories::firstOrCreate(
+                        ['id_cat' => $genre['id']],
+                        ['title_cat' => $genre['name'] ?? 'Inconnu']
+                    );
+                    $genreIds[] = $category->id_cat; // ID interne (auto-increment) de la table categories
+                }
+            }
+            // Enregistrer le film
+            $movie = movies::create([
+                'tmdb_id'     => $tmdbMovie['id'],
+                'slug'        => Str::slug($tmdbMovie['title'] ?? 'titre'),
+                'movie_title' => $tmdbMovie['title'] ?? 'Titre inconnu',
+                'synopsis'    => $tmdbMovie['overview'] ?? '',
+                'year'        => isset($tmdbMovie['release_date']) ? substr($tmdbMovie['release_date'], 0, 4) : null,
+                'casting'     => $cast,
+                'image'       => isset($tmdbMovie['poster_path']) ? 'https://image.tmdb.org/t/p/w500' . $tmdbMovie['poster_path'] : null,
+                'trailler'    => $trailerUrl,
+                'avg_note'    => $tmdbMovie['vote_average'] ?? 0,
+            ]);
+
+            // Associer les catégories au film
+            $movie->categories()->sync($genreIds); // ou ->attach($genreIds) si création initiale
 
             // 8. Enregistrement du film
-            movies::create([
-                'tmdb_id' => $tmdbMovie['id'],
-                'slug' => Str::slug($tmdbMovie['title'] ?? 'titre'),
-                'movie_title' => $tmdbMovie['title'] ?? 'Titre inconnu',
-                'synopsis' => $tmdbMovie['overview'] ?? '',
-                'year' => isset($tmdbMovie['release_date']) ? substr($tmdbMovie['release_date'], 0, 4) : null,
-                'casting' => $cast,
-                'image' => isset($tmdbMovie['poster_path']) ? 'https://image.tmdb.org/t/p/w500' . $tmdbMovie['poster_path'] : null,
-                'trailler' => $trailerUrl,
-                'avg_note' => $tmdbMovie['vote_average'] ?? 0,
-                'id_cat' => $firstGenreId,
-            ]);
+
             return to_route('movies.show', ['slug' => Str::slug($tmdbMovie['title'] ?? 'titre'), 'tmdb_id' => $tmdbMovie['id']]);
 
         }
@@ -203,25 +211,25 @@ class MoviesController extends Controller
     public function show(string $slug, string $tmdb_id)
     {
         $movie = Movies::where('tmdb_id', $tmdb_id)->firstOrFail(); // ou ce que tu utilises
-    
+
         // Récupérer toutes les critiques du film avec les relations
         $critiques = critiques::with(['user', 'likes'])
             ->where('id_movie', $movie->id_movie)
             ->get();
-    
+
         $userLikedCritiques = [];
-    
+
         if (Auth::check()) {
             $userId = Auth::user()->user_id;
-    
+
             // Récupérer tous les likes de l'utilisateur pour les critiques de ce film
             $liked = Like::where('user_id', $userId)
                 ->whereIn('critique_id', $critiques->pluck('id_critique'))
                 ->pluck('critique_id')
                 ->toArray();
-            
+
             $userLikedCritiques = array_flip($liked); // Pour un accès rapide via isset()
-            
+
         }
         if ($movie->slug !== $slug) {
             return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]);

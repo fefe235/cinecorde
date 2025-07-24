@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string("image");
             $table->string("trailler")->nullable();
             $table->decimal("avg_note",5,3);
-            $table->foreignId('id_cat')->constrained('categories','id_cat');
             $table->timestamps();
         });
     }

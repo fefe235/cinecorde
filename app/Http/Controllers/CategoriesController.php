@@ -9,12 +9,8 @@ use App\Models\movies;
 class CategoriesController extends Controller
 {
     public function index() {
-        $categories = categories::all();
-        $movies = movies::all();
-        return view('categories',[
-            'categories' => $categories,
-            'movies' => $movies
-        ]);
-        
+        $categories = Categories::with('movies')->get();
+        $movies = movies::all(); // eager load
+        return view('categories',compact('categories','movies'));
     }
 }

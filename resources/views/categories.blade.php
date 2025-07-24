@@ -5,10 +5,10 @@
 <h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 1rem;"> Classement des films par catégorie</h1>
 <!-- affiche les films par categories et par notes utilisation de alpine.js pour l'accordéon -->
 @foreach ($categories as $categorie)
-    @php
-        $filtered = $movies->filter(fn($movie) => $movie->id_cat === $categorie->id_cat)->sortByDesc('avg_note');
-        $count = $filtered->count();
-    @endphp
+@php
+    $filtered = $categorie->movies->sortByDesc('avg_note');
+    $count = $filtered->count();
+@endphp
 
     <div x-data="{ open: false }" style="margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 6px;">
         <button @click="open = !open" class="category-button">
