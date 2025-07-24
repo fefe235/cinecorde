@@ -16,7 +16,7 @@ class MoviesController extends Controller
     public function index()
     {
         //classer par note
-        $movies = movies::orderBy('avg_note', 'desc')->get();
+        $movies = movies::orderBy('avg_note', 'desc')->paginate(25);
         return view('home', [
             'movies' => $movies
 

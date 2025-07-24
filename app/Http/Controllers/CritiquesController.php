@@ -84,7 +84,6 @@ class CritiquesController extends Controller
             'id_user' => $request->input('id_user'),
             'critique' => $request->input('critique'),
             'nbr_like' => 0,
-            'bool_like' => '0',
         ]);
         //mets a jour la note moyenne du film
         $movie = movies::where('id_movie', $request->input('id_movie'))->firstOrFail();

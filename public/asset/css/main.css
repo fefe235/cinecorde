@@ -1,4 +1,4 @@
-/* ===== NAVIGATION ===== */
+/* ===== NAVIGATION =====
 nav {
   height: 18vh;
   display: flex;
@@ -21,16 +21,22 @@ nav a:hover {
   color: #ff6f61;
 }
 
+
+
+.nav-item {
+  list-style: none;
+} */
+
+.align-center{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 #logo {
   width: 100px;
   max-width: 100%;
   height: auto;
 }
-
-.nav-item {
-  list-style: none;
-}
-
 /* ===== ÉTOILES DE NOTE ===== */
 .star {
   font-size: 2rem;
@@ -633,3 +639,4 @@ textarea {
     max-width: 90%;
   }
 }
+
