@@ -13,7 +13,8 @@ class categories extends Model
             movies::class,      // Modèle cible
             'category_movie',   // Table pivot
             'id_cat',           // Clé étrangère vers categories dans la table pivot
-            'id_movie'          // Clé étrangère vers movies dans la table pivot
+            'id_movie' 
+                     // Clé étrangère vers movies dans la table pivot
         );
     }
 

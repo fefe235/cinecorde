@@ -9,8 +9,18 @@ use App\Models\movies;
 class CategoriesController extends Controller
 {
     public function index() {
-        $categories = Categories::with('movies')->get();
-        $movies = movies::all(); // eager load
-        return view('categories',compact('categories','movies'));
+        $selectedCategoryId = request()->get('id') ?? Categories::pluck('id_cat')->random();
+    $categoriesWithMovies = Categories::with('movies')->get();
+
+    $selectedCategory = null;
+    $filteredMovies = collect(); // vide par défaut
+    if ($selectedCategoryId) {
+        $selectedCategory = Categories::with('movies')->find($selectedCategoryId);
+        if ($selectedCategory) {
+            $filteredMovies = $selectedCategory->movies()->paginate(25);
+        }
+    }
+
+    return view('categories', compact('categoriesWithMovies', 'filteredMovies', 'selectedCategoryId'));
     }
 }

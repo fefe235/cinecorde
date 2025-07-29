@@ -2,38 +2,49 @@
 @section('title', 'Catégories - Cinecorde')
 
 @section('content')
-<h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 1rem;"> Classement des films par catégorie</h1>
-<!-- affiche les films par categories et par notes utilisation de alpine.js pour l'accordéon -->
-@foreach ($categories as $categorie)
-@php
-    $filtered = $categorie->movies->sortByDesc('avg_note');
-    $count = $filtered->count();
-@endphp
+<header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-around py-3 mb-4 border-bottom">
+<ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+    <form method="post"></form>
+        @foreach ($categoriesWithMovies as $category )
 
-    <div x-data="{ open: false }" style="margin-bottom: 1rem; border: 1px solid #ddd; border-radius: 6px;">
-        <button @click="open = !open" class="category-button">
-            {{ $categorie->title_cat }} ({{ $count }} film{{ $count > 1 ? 's' : '' }})
-            <svg :class="{ 'rotate': open }" class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
-        </button>
+        <li>
+                <a href="?id={{ $category->id_cat }}" 
+                   class="nav-link px-2 {{ request('id') == $category->id_cat ? 'fw-bold text-primary' : '' }}">
+                    {{ $category->title_cat }}
+                </a>
+            </li>
 
-        <div class="category-content" x-ref="content" :class="{ 'open': open }">
-            @forelse ($filtered as $index => $movie)
-                <div class="movie-card">
-                    <a href="{{ route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]) }}">
-                        <h3 style="font-size: 1.1rem; font-weight: bold;">
-                            #{{ $index + 1 }} - {{ $movie->movie_title }} ({{ $movie->year }})
-                        </h3>
-                        <img src="{{ $movie->image }}" width="150" style="margin: 0.5rem 0;">
-                    </a>
-                    <p><strong>Note :</strong> {{ $movie->avg_note }}/10</p>
+            
+        @endforeach
+
+        </ul>
+</header>
+       <!-- 🔹 Affichage des films -->
+@if (isset($filteredMovies) && $filteredMovies->count())
+    <h2>Films dans la catégorie : <strong>{{ $categoriesWithMovies->firstWhere('id_cat', $selectedCategoryId)?->title_cat }}</strong></h2>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach ($filteredMovies as $movie)
+            <div class="col">
+                <div class="card h-100">
+                    <img src="{{ $movie->image }}" class="card-img-top" alt="{{ $movie->movie_title }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ $movie->movie_title }} ({{ $movie->year }})</h5>
+                        <p class="card-text"><strong>Note :</strong> {{ $movie->avg_note }}/10</p>
+                        <a href="{{ route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]) }}" class="btn btn-primary">Voir le film</a>
+                    </div>
                 </div>
-            @empty
-                <p>Aucun film dans cette catégorie.</p>
-            @endforelse
-        </div>
+            </div>
+        @endforeach
     </div>
-@endforeach
+
+    <!-- 🔹 Pagination -->
+    <div class="align-center">
+        {{ $filteredMovies->appends(['id' => $selectedCategoryId])->links() }}
+    </div>
+@else
+    <p class="text-muted">Aucun film dans cette catégorie.</p>
+@endif
+
 @endsection
 
