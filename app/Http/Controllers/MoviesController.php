@@ -9,6 +9,7 @@ use App\Models\movies;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class MoviesController extends Controller
@@ -153,6 +154,7 @@ class MoviesController extends Controller
             $trailer = collect($videoResponse->json()['results'] ?? [])->firstWhere('type', 'Trailer');
             $trailerUrl = $trailer ? 'https://www.youtube.com/watch?v=' . $trailer['key'] : null;
 
+
             //  Catégorie principale du film (ou catégorie par défaut si absente)
             $firstGenreId = null;
 
@@ -184,16 +186,36 @@ class MoviesController extends Controller
                 }
             }
             // Enregistrer le film
+            // Construire l'URL de l'image (poster)
+            $storeImageUrl = 'https://image.tmdb.org/t/p/w500' . $tmdbMovie['poster_path'];
+
+            // Téléchargement de l'image
+            $response = Http::get($storeImageUrl);
+
+            // Vérifier que l’image a bien été récupérée
+            if ($response->successful()) {
+                // Nettoyer le titre du film pour en faire un nom de fichier correct
+                $safeFilename = Str::slug($tmdbMovie['title'] ?? 'image') . '.jpg';
+
+                // Stocker l’image dans le dossier "storage/app/public/posters"
+                $success = Storage::disk('public')->put("posters/{$safeFilename}", $response->body());
+
+                // Chemin web vers l’image
+                $posterPath = $success ? "storage/posters/{$safeFilename}" : null;
+            } else {
+                $posterPath = null;
+            }
+
             $movie = movies::create([
-                'tmdb_id'     => $tmdbMovie['id'],
-                'slug'        => Str::slug($tmdbMovie['title'] ?? 'titre'),
+                'tmdb_id' => $tmdbMovie['id'],
+                'slug' => Str::slug($tmdbMovie['title'] ?? "titre"),
                 'movie_title' => $tmdbMovie['title'] ?? 'Titre inconnu',
-                'synopsis'    => $tmdbMovie['overview'] ?? '',
-                'year'        => isset($tmdbMovie['release_date']) ? substr($tmdbMovie['release_date'], 0, 4) : null,
-                'casting'     => $cast,
-                'image'       => isset($tmdbMovie['poster_path']) ? 'https://image.tmdb.org/t/p/w500' . $tmdbMovie['poster_path'] : null,
-                'trailler'    => $trailerUrl,
-                'avg_note'    => $tmdbMovie['vote_average'] ?? 0,
+                'synopsis' => $tmdbMovie['overview'] ?? '',
+                'year' => isset($tmdbMovie['release_date']) ? substr($tmdbMovie['release_date'], 0, 4) : null,
+                'casting' => $cast,
+                'image' => $posterPath ?? null,
+                'trailler' => $trailerUrl,
+                'avg_note' => $tmdbMovie['vote_average'] ?? 0,
             ]);
 
             // Associer les catégories au film

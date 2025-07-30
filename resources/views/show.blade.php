@@ -4,7 +4,7 @@
 <div class="container">
     <!-- affiche le détail d'un film -->
     <div class="movie-header">
-        <img src="{{ $movie->image }}" alt="{{ $movie->movie_title }}">
+        <img src="{{ asset($movie->image) }}" alt="{{ $movie->movie_title }}">
         <div class="movie-details">
             <h3>{{ $movie->movie_title }} ({{ $movie->year }})</h3>
             <p><strong>Note :</strong> {{ $movie->avg_note }}/10</p>

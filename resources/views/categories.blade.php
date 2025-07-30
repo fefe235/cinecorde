@@ -27,7 +27,7 @@
         @foreach ($filteredMovies as $movie)
             <div class="col">
                 <div class="card h-100">
-                    <img src="{{ $movie->image }}" class="card-img-top" alt="{{ $movie->movie_title }}">
+                    <img src="{{ asset($movie->image) }}" class="card-img-top" alt="{{ $movie->movie_title }}">
                     <div class="card-body">
                         <h5 class="card-title">{{ $movie->movie_title }} ({{ $movie->year }})</h5>
                         <p class="card-text"><strong>Note :</strong> {{ $movie->avg_note }}/10</p>
