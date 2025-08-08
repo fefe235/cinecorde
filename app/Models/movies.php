@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class movies extends Model
+class Movies extends Model
 {
     protected $table = 'movies';            // Nom de la table (optionnel si conforme)
     protected $primaryKey = 'id_movie';     // ✅ Clé primaire personnalisée

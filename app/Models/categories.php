@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class categories extends Model
+class Categories extends Model
 {protected $primaryKey = 'id_cat'; // clé primaire personnalisée
     protected $fillable = ['title_cat'];
     public function movies()

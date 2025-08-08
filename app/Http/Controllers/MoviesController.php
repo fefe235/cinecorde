@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\categories;
-use App\Models\critiques;
+use App\Models\Categories;
+use App\Models\Critiques;
 use App\Models\Like;
 use App\Models\movies;
+use App\Models\User;
 use Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -14,19 +16,19 @@ use Illuminate\Support\Str;
 
 class MoviesController extends Controller
 {
+    use AuthorizesRequests;
     public function index()
     {
         //classer par note
-        $movies = movies::orderBy('avg_note', 'desc')->paginate(25);
+        $movies = Movies::orderBy('avg_note', 'desc')->paginate(25);
         return view('home', [
-            'movies' => $movies
-
+            'movies' => $movies,
         ]);
 
     }
     public function admin()
     {
-        $movies = movies::orderBy('avg_note', 'desc')->get();
+        $movies = Movies::orderBy('avg_note', 'desc')->get();
         return view('admin', [
             'movies' => $movies
 
@@ -35,7 +37,8 @@ class MoviesController extends Controller
     }
     public function delete(string $id)
     {
-        $movie = movies::findOrFail($id);
+        $movie = Movies::findOrFail($id);
+        $this->authorize('delete', $movie);
         $movie->critiques()->delete();
         if ($movie->delete()) {
             return redirect()->route('movies')->with('success', 'Le film a bien été supprimé');
@@ -81,7 +84,7 @@ class MoviesController extends Controller
         $id = $request->input('id');
         $tmdbApiKey = config('services.tmdb.key');
 
-        $ifexistcat = categories::all();
+        $ifexistcat = Categories::all();
         //verifie si les categorie sont dans la base de donné pour stocker ou non les données
         if (empty($ifexistcat)) {
             //  Synchroniser les catégories depuis TMDb
@@ -97,7 +100,7 @@ class MoviesController extends Controller
             $tmdbGenres = $genreResponse->json()['genres'] ?? [];
 
             foreach ($tmdbGenres as $genre) {
-                categories::updateOrCreate(
+                Categories::updateOrCreate(
                     ['id_cat' => $genre['id']],
                     ['title_cat' => $genre['name']]
                 );
@@ -119,7 +122,7 @@ class MoviesController extends Controller
 
             $id = $firstResult['id']; // Met à jour l’ID trouvé(le film a maintenant un id)
         }
-        $ifmovieid = movies::where('tmdb_id', $id)->first();
+        $ifmovieid = Movies::where('tmdb_id', $id)->first();
         // Récupérer le film par son ID
         if (empty($ifmovieid)) {
             $response = Http::get("https://api.themoviedb.org/3/movie/{$id}", [
@@ -133,7 +136,7 @@ class MoviesController extends Controller
 
             $tmdbMovie = $response->json();
             //  Vérification de doublon
-            $existing = movies::where('tmdb_id', $tmdbMovie['id'])->first();
+            $existing = Movies::where('tmdb_id', $tmdbMovie['id'])->first();
             if (isset($existing)) {
                 return to_route('movies.show', ['slug' => Str::slug($tmdbMovie['title'] ?? 'titre'), 'tmdb_id' => $tmdbMovie['id']]);
 
@@ -170,7 +173,7 @@ class MoviesController extends Controller
             $tmdbGenres = $genreResponse->json()['genres'] ?? [];
 
             foreach ($tmdbGenres as $genre) {
-                categories::updateOrCreate(
+                Categories::updateOrCreate(
                     ['id_cat' => $genre['id']],
                     ['title_cat' => $genre['name']]
                 );
@@ -178,7 +181,7 @@ class MoviesController extends Controller
             $genreIds = [];
             if (!empty($tmdbMovie['genres'])) {
                 foreach ($tmdbMovie['genres'] as $genre) {
-                    $category = categories::firstOrCreate(
+                    $category = Categories::firstOrCreate(
                         ['id_cat' => $genre['id']],
                         ['title_cat' => $genre['name'] ?? 'Inconnu']
                     );
@@ -206,7 +209,7 @@ class MoviesController extends Controller
                 $posterPath = null;
             }
 
-            $movie = movies::create([
+            $movie = Movies::create([
                 'tmdb_id' => $tmdbMovie['id'],
                 'slug' => Str::slug($tmdbMovie['title'] ?? "titre"),
                 'movie_title' => $tmdbMovie['title'] ?? 'Titre inconnu',
@@ -235,7 +238,7 @@ class MoviesController extends Controller
         $movie = Movies::where('tmdb_id', $tmdb_id)->firstOrFail(); // ou ce que tu utilises
 
         // Récupérer toutes les critiques du film avec les relations
-        $critiques = critiques::with(['user', 'likes'])
+        $critiques = Critiques::with(['user', 'likes'])
             ->where('id_movie', $movie->id_movie)
             ->get();
 

@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Auth;
 use Hash;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
+    use AuthorizesRequests;
     public function register(){
             return view('auth.register');
         
@@ -18,8 +20,10 @@ class AuthController extends Controller
     public function top_critique(){
         //avoir les utilisateur avec le plus de like
         $users = User::orderBy('nbr_like_total', 'desc')->get();
+        $usersClass= User::class;
         return view('topcritique',[
-            'users'=> $users
+            'users'=> $users,
+            'usersClass'=> $usersClass,
         ]);
     
 }
@@ -36,7 +40,6 @@ class AuthController extends Controller
             'email.email' => 'Merci d’entrer un email valide.',
             'email.unique' => 'Cet email est déjà utilisé.',
         ]);
-
         User::create([
                     'email' => $request->input("email"),
                     'name' => $request->input('name'),
@@ -53,18 +56,21 @@ class AuthController extends Controller
             'email' => 'required|unique:users,email',
             'name' => 'required|unique:users,name',
             'password' => 'required|min:4|confirmed',
+            'role'=> 'required|max:1'
         ], [
             'name.required' => 'Le nom est obligatoire.',
             'name.unique' => 'Ce nom est déjà utilisé, merci d’en choisir un autre.',
             'email.required' => 'L’email est obligatoire.',
             'email.email' => 'Merci d’entrer un email valide.',
             'email.unique' => 'Cet email est déjà utilisé.',
+            'role.required' => 'le role oublié 1 pour admin '
         ]);
+        $this->authorize('create',User::class);
 
         User::create([
                     'email' => $request->input("email"),
                     'name' => $request->input('name'),
-                    'role'=> 'admin',
+                    'isAdmin'=> $request->input('role'),
                     'nbr_like_total'=> 0,
                     'bool_like'=> '0',
                     'password' => Hash::make($request->input("password"))
@@ -92,15 +98,7 @@ public function doLogin(Request $request)
     if ($userEstValide) {
         $request->session()->regenerate();
 
-        $user = Auth::user()->role;
-        //redirection vers la bonne page
-        if($user === 'user')
-        {
         return redirect()->intended(route('movies'));
-        }else{
-        return redirect()->intended(route('admin'));
-
-        }
     }
 
     return back()->withErrors([
@@ -130,7 +128,6 @@ public function handleGoogleCallback()
             [
                 'name' => $googleUser->getName(),
                 'password' => bcrypt(uniqid()), // mot de passe aléatoire
-                'role' => 'user',
                 'nbr_like_total' => 0,
                 'bool_like' => 0,
             ]
@@ -142,5 +139,16 @@ public function handleGoogleCallback()
     } catch (\Exception $e) {
         return redirect()->route('auth.login')->withErrors(['login_error' => 'Échec de la connexion avec Google.']);
     }
+}
+public function destroy($id)
+{
+    $user = User::findOrFail($id);
+
+    // Optionnel : autorisation (admin seulement ?)
+   $this->authorize("delete",$user);
+
+    $user->delete();
+
+    return redirect()->route('top_critique')->with('success', 'Utilisateur supprimé.');
 }
 }

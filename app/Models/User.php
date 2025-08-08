@@ -23,8 +23,7 @@ protected $keyType = 'int';
         'name',
         'email',
         'password',
-        'nbr_like_total',
-        'role'
+        'nbr_like_total'
     ];
 
     /**
@@ -47,6 +46,7 @@ protected $keyType = 'int';
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
     }
 }

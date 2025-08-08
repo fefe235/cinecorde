@@ -12,7 +12,7 @@ Route::get('/autocomplete-movies', [MoviesController::class, 'autocomplete'])->n
 Route::post('/movies/search/', [MoviesController::class, 'storeFromSearch'])->name('movies.search');
 Route::get('/',[MoviesController::class,'index'])->name('movies');
 Route::get('/admin',[MoviesController::class,'admin'])->middleware('auth')->name('admin');
-Route::post('/movies/{id}/delete', [MoviesController::class, 'delete'])->name('movies.delete');
+Route::delete('/movies/{id}/delete', [MoviesController::class, 'delete'])->name('movies.delete');
 Route::get('/movies/{slug}/{tmdb_id}/', [MoviesController::class, 'show'])
         ->name('movies.show')
         ->where(['slug' => '[a-z0-9\-]+','tmdb_id' => '[0-9]+']);
@@ -34,6 +34,8 @@ Route::post('/connexion', [AuthController::class, 'doLogin'])->name('auth.doLogi
 Route::post('/deconnexion', [AuthController::class, 'logout'])->name('auth.logout');
 Route::get('/auth/redirect/google', [AuthController::class, 'redirectToGoogle'])->name('google.redirect');
 Route::get('/auth/callback/google', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
+Route::delete('/users/{id}', [AuthController::class, 'destroy'])->name('users.destroy');
+
 
 Route::middleware('auth')->group(function () {
         Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');

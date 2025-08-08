@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\critiques;
-use App\Models\movies;
+use App\Models\Critiques;
+use App\Models\Movies;
 use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Like;
 
 class CritiquesController extends Controller
 {
+    use AuthorizesRequests;
     public function dislike($id_critique)
     {
         $userId = Auth::id();
@@ -24,7 +26,7 @@ class CritiquesController extends Controller
             $like->delete();
 
             // décrémenter le compteur si tu as un champ `nbr_like`
-            $critique = critiques::find($id_critique);
+            $critique = Critiques::find($id_critique);
             if ($critique && $critique->nbr_like > 0) {
                 $critique->decrement('nbr_like');
                 User::where('user_id', Auth::user()->user_id)->decrement('nbr_like_total');
@@ -50,7 +52,7 @@ class CritiquesController extends Controller
             ]);
 
             // Incrémente le compteur de like dans la critique
-            critiques::where('id_critique', $id_critique)->increment('nbr_like');
+            Critiques::where('id_critique', $id_critique)->increment('nbr_like');
             User::where('user_id', Auth::user()->user_id)->increment('nbr_like_total');
         }
 
@@ -70,7 +72,7 @@ class CritiquesController extends Controller
         $userId = auth()->id();
         $movieId = $request->input('id_movie');
         //verifier si l'utilisateur a deja critiqué
-        $existingCritique = critiques::where('id_user', $userId)
+        $existingCritique = Critiques::where('id_user', $userId)
             ->where('id_movie', $movieId)
             ->first();
 
@@ -78,7 +80,7 @@ class CritiquesController extends Controller
             return back()->with('error', 'Vous avez déjà posté une critique pour ce film.');
         }
         //mets la critique dans la base de données
-        critiques::create([
+        Critiques::create([
             'note' => $request->input('rate'),
             'id_movie' => $request->input('id_movie'),
             'id_user' => $request->input('id_user'),
@@ -86,7 +88,7 @@ class CritiquesController extends Controller
             'nbr_like' => 0,
         ]);
         //mets a jour la note moyenne du film
-        $movie = movies::where('id_movie', $request->input('id_movie'))->firstOrFail();
+        $movie = Movies::where('id_movie', $request->input('id_movie'))->firstOrFail();
         $movie->avg_note = Critiques::where('id_movie', $movie->id_movie)->avg('note');
         $movie->save();
         return back();
@@ -94,14 +96,16 @@ class CritiquesController extends Controller
     public function edit(string $id)
     {
         return view('edit', [
-            'critique' => critiques::findOrFail($id)
+            'critique' => Critiques::findOrFail($id)
         ]);
     }
 
     public function update(string $id, Request $request)
     {
         //chercher la critique dans la base
-        $critique = critiques::findOrFail($id);
+        $critique = Critiques::findOrFail($id);
+        $this->authorize('update',$critique);
+
         //valider la critique saisie
         $request->validate([
             'rate' => 'required',
@@ -112,7 +116,7 @@ class CritiquesController extends Controller
         $critique->critique = $request->input('critique');
         $critique->save();
         //metre a jour la note du film
-        $movie = movies::where('id_movie', $critique->id_movie)->firstOrFail();
+        $movie = Movies::where('id_movie', $critique->id_movie)->firstOrFail();
         $movie->avg_note = Critiques::where('id_movie', $movie->id_movie)->avg('note');
         $movie->save();
         return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]);
@@ -120,8 +124,9 @@ class CritiquesController extends Controller
 
     public function delete(string $id)
     {
-        $critique = critiques::findOrFail($id);
-        $movie = movies::where('id_movie', $critique->id_movie)->firstOrFail();
+        $critique = Critiques::findOrFail($id);
+        $this->authorize('delete',$critique);
+        $movie = Movies::where('id_movie', $critique->id_movie)->firstOrFail();
         //supprimer crtique
         if ($critique->delete()) {
             return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]);

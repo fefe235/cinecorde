@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\categories;
-use App\Models\movies;
+use App\Models\Categories;
+use App\Models\Movies;
 
 
 class CategoriesController extends Controller

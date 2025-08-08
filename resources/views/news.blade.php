@@ -2,6 +2,12 @@
 
 @section('content')
 <!-- affiche les dernieres actualités -->
+@can('create', $news2)
+<form action="{{ route('actualites.create',$news2,$news2) }}" method="POST" class="admin-refresh-form">
+      @csrf
+      <button type="submit" class="btn-refresh">Rafraîchir actualité</button>
+  </form>
+@endcan
     <h1 class="text-2xl font-bold mb-4">Actualités Cinéma</h1>
 
     <div class="news-container">
