@@ -5,13 +5,12 @@
 @if ($categoriesWithMovies)
 <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-around py-3 mb-4 border-bottom">
 <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-   
 
         @foreach ($categoriesWithMovies as $category )
 
         <li>
                 <a href="?id={{ $category->id_cat }}" 
-                   class="nav-link px-2 {{ request('id') == $category->id_cat ? 'fw-bold text-primary' : '' }}">
+                class="nav-link px-2 {{ request('id') == $category->id_cat ? 'fw-bold text-primary' : '' }}">
                     {{ $category->title_cat }}
                 </a>
             </li>
@@ -22,7 +21,7 @@
         </ul>
 </header>
 @endif
-       <!-- 🔹 Affichage des films -->
+    <!-- 🔹 Affichage des films -->
 @if (isset($filteredMovies) && $filteredMovies->count())
     <h2>Films dans la catégorie : <strong>{{ $categoriesWithMovies->firstWhere('id_cat', $selectedCategoryId)?->title_cat }}</strong></h2>
 

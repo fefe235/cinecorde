@@ -23,7 +23,8 @@ protected $keyType = 'int';
         'name',
         'email',
         'password',
-        'nbr_like_total'
+        'nbr_like_total',
+        'rank'
     ];
 
     /**

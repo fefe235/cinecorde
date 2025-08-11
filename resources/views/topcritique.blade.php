@@ -93,13 +93,21 @@
     </div>
     </div>
   @endcan
+<!-- Barre de recherche -->
+<div class="container mb-4">
+    <form action="{{ route('top_critique') }}" method="GET" class="d-flex">
+        <input type="text" name="search" class="form-control me-2" 
+               placeholder="Rechercher par nom..." value="{{ request('search') }}">
+        <button type="submit" class="btn btn-primary">🔍 Rechercher</button>
+    </form>
+</div>
 
   <!-- affiche tout les utilisateur par nombre de likes -->
   <div class="container">
     <ol class="top-critique-list">
     @foreach($users as $index => $user)
       <li class="top-critique-item">
-      <span class="top-critique-rank">{{ $index + 1 }}</span>
+      <span class="top-critique-rank">{{ $user->rank}}</span>
       <h3>{{ $user->name }} — {{ $user->nbr_like_total }} like{{ $user->nbr_like_total > 1 ? 's' : '' }}</h3>
       
       @can('delete', $user)
@@ -113,5 +121,6 @@
     @endforeach
     </ol>
   </div>
-  <div class="align-center">{{ $users->links() }}</div>
+  <div class="align-center">{{ $users->appends(request()->query())->links() }}</div>
+
 @endsection

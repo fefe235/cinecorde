@@ -32,7 +32,7 @@ class CritiquesController extends Controller
                 User::where('user_id', Auth::user()->user_id)->decrement('nbr_like_total');
             }
         }
-
+        $this->updateAllRanks();
         return back()->with('success', 'Like supprimé');
     }
 
@@ -55,10 +55,21 @@ class CritiquesController extends Controller
             Critiques::where('id_critique', $id_critique)->increment('nbr_like');
             User::where('user_id', Auth::user()->user_id)->increment('nbr_like_total');
         }
-
+        $this->updateAllRanks();
         return back();
     }
-
+    public function updateAllRanks()
+    {
+        $users = User::orderByDesc('nbr_like_total')->get();
+        $rank = 1;
+    
+        foreach ($users as $user) {
+            $user->update(['rank' => $rank]);
+            $rank++;
+        }
+    }
+    
+    
 
     public function create(Request $request)
     {
@@ -128,8 +139,12 @@ class CritiquesController extends Controller
         $this->authorize('delete',$critique);
         $movie = Movies::where('id_movie', $critique->id_movie)->firstOrFail();
         //supprimer crtique
-        if ($critique->delete()) {
-            return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]);
-        }
+            if ($critique->delete()) {
+                return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id])
+                    ->with('success', 'Critique supprimée avec succès.');
+            }
+            
+            return back()->with('error', 'Impossible de supprimer la critique.');
+            
     }
 }

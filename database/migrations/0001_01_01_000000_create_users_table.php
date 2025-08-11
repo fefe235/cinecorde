@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->integer('nbr_like_total');
+            $table->integer('rank')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });
