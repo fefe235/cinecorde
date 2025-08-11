@@ -19,7 +19,7 @@ class AuthController extends Controller
 
     public function top_critique(){
         //avoir les utilisateur avec le plus de like
-        $users = User::orderBy('nbr_like_total', 'desc')->get();
+        $users = User::orderBy('nbr_like_total', 'desc')->paginate(25);
         $usersClass= User::class;
         return view('topcritique',[
             'users'=> $users,

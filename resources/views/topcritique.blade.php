@@ -113,4 +113,5 @@
     @endforeach
     </ol>
   </div>
+  <div class="align-center">{{ $users->links() }}</div>
 @endsection

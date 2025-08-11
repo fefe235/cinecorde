@@ -26,15 +26,6 @@ class MoviesController extends Controller
         ]);
 
     }
-    public function admin()
-    {
-        $movies = Movies::orderBy('avg_note', 'desc')->get();
-        return view('admin', [
-            'movies' => $movies
-
-        ]);
-
-    }
     public function delete(string $id)
     {
         $movie = Movies::findOrFail($id);
@@ -84,28 +75,7 @@ class MoviesController extends Controller
         $id = $request->input('id');
         $tmdbApiKey = config('services.tmdb.key');
 
-        $ifexistcat = Categories::all();
-        //verifie si les categorie sont dans la base de donné pour stocker ou non les données
-        if (empty($ifexistcat)) {
-            //  Synchroniser les catégories depuis TMDb
-            $genreResponse = Http::get('https://api.themoviedb.org/3/genre/movie/list', [
-                'api_key' => $tmdbApiKey,
-                'language' => 'fr-FR',
-            ]);
 
-            if ($genreResponse->failed()) {
-                return redirect()->route('movies')->with('error', 'Erreur lors de la récupération des catégories.');
-            }
-
-            $tmdbGenres = $genreResponse->json()['genres'] ?? [];
-
-            foreach ($tmdbGenres as $genre) {
-                Categories::updateOrCreate(
-                    ['id_cat' => $genre['id']],
-                    ['title_cat' => $genre['name']]
-                );
-            }
-        }
         //  Si aucun ID, on cherche par nom
         if (empty($id) && $query) {
             $searchResponse = Http::get("https://api.themoviedb.org/3/search/movie", [
@@ -172,11 +142,16 @@ class MoviesController extends Controller
 
             $tmdbGenres = $genreResponse->json()['genres'] ?? [];
 
-            foreach ($tmdbGenres as $genre) {
-                Categories::updateOrCreate(
-                    ['id_cat' => $genre['id']],
-                    ['title_cat' => $genre['name']]
-                );
+            $category = Categories::all();
+
+            if (empty($category)) {
+
+                foreach ($tmdbGenres as $genre) {
+                    Categories::updateOrCreate(
+                        ['id_cat' => $genre['id']],
+                        ['title_cat' => $genre['name']]
+                    );
+                }
             }
             $genreIds = [];
             if (!empty($tmdbMovie['genres'])) {
