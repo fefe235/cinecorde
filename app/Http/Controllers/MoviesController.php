@@ -140,19 +140,9 @@ class MoviesController extends Controller
                 return redirect()->route('movies')->with('error', 'Erreur lors de la récupération des catégories.');
             }
 
-            $tmdbGenres = $genreResponse->json()['genres'] ?? [];
 
             $category = Categories::all();
 
-            if (empty($category)) {
-
-                foreach ($tmdbGenres as $genre) {
-                    Categories::updateOrCreate(
-                        ['id_cat' => $genre['id']],
-                        ['title_cat' => $genre['name']]
-                    );
-                }
-            }
             $genreIds = [];
             if (!empty($tmdbMovie['genres'])) {
                 foreach ($tmdbMovie['genres'] as $genre) {

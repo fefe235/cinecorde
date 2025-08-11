@@ -2,9 +2,11 @@
 @section('title', 'Catégories - Cinecorde')
 
 @section('content')
+@if ($categoriesWithMovies)
 <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-around py-3 mb-4 border-bottom">
 <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-    <form method="post"></form>
+   
+
         @foreach ($categoriesWithMovies as $category )
 
         <li>
@@ -19,6 +21,7 @@
 
         </ul>
 </header>
+@endif
        <!-- 🔹 Affichage des films -->
 @if (isset($filteredMovies) && $filteredMovies->count())
     <h2>Films dans la catégorie : <strong>{{ $categoriesWithMovies->firstWhere('id_cat', $selectedCategoryId)?->title_cat }}</strong></h2>
