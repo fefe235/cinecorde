@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Critiques;
 use App\Models\User;
 use Auth;
 use Hash;
@@ -26,11 +27,17 @@ class AuthController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
         //avoir les utilisateur avec le plus de like
-        $users = $query->orderByDesc('nbr_like_total')->paginate(10);
+        $users = User::with(['favoriteMovies' => function($query) {
+            $query->with(['critiques' => function($query) {
+                $query->withCount('likes');  // Compte le nbr de likes par critique
+            }]);
+        }])->orderBy('rank', 'asc')->paginate(10);
+        
         $usersClass = User::class;
+       
         return view('topcritique', [
             'users' => $users,
-            'usersClass' => $usersClass,
+            'usersClass' => $usersClass
         ]);
 
     }

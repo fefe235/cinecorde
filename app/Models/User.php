@@ -50,4 +50,15 @@ protected $keyType = 'int';
             'is_admin' => 'boolean',
         ];
     }
+    public function favoriteMovies()
+    {
+        return $this->belongsToMany(Movies::class, 'favorites', 'user_id', 'movie_id');
+    }
+    
+    public function critiques()
+    {
+        return $this->hasMany(Critiques::class, 'id_user', 'user_id');
+    }
+    
+
 }

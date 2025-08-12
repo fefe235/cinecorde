@@ -25,7 +25,12 @@ class Movies extends Model
 
     public function critiques()
 {
-    return $this->hasMany(critiques::class, 'id_movie', 'id_movie');
+    return $this->hasMany(Critiques::class, 'id_movie', 'id_movie');
+}
+public function favoritedBy()
+{
+    return $this->belongsToMany(User::class, 'favorites', 'movie_id', 'user_id')
+                ->withTimestamps();
 }
 
 }

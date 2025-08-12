@@ -13,6 +13,13 @@
                 @if($movie->trailler)
                     <p><a href="{{ $movie->trailler }}" target="_blank">🎬 Voir la bande-annonce</a></p>
                 @endif
+                <form action="{{ route('movies.favorite', $movie->id_movie) }}" method="POST">
+                    @csrf
+                    <button type="submit">
+                        {{ auth()->user()->favoriteMovies->contains($movie->id_movie) ? '💔' : '❤️' }}
+                    </button>
+                </form>
+
                 @can('delete', $movie)
                     <form action="{{ route('movies.delete', $movie, $movie->id) }}" method="POST">
                         @csrf
@@ -24,12 +31,6 @@
         </div>
         <!-- bouton supprimer pour l'admin -->
         @auth
-            @if(Auth()->user()->role === "admin")
-                <form action="{{ route('movies.delete', ['id' => $movie->id_movie]) }}" method="post">
-                    @csrf
-                    <button type="submit">Supprimer</button>
-                </form>
-            @endif
             <!-- note avec des étoile lié au formulaire -->
             <div id="rating">
                 @for ($i = 1; $i <= 10; $i++)
@@ -41,7 +42,7 @@
                 @csrf
                 <input type="hidden" name="rate" id="rate">
                 <input type="hidden" name="id_movie" value="{{ $movie->id_movie }}">
-                <input type="hidden" name="id_user" value="{{ Auth::user()->user_id }}">
+                <input type="hidden" name="id_user" value="{{ $userId }}">
                 <textarea name="critique" id="critique" minlength="11" placeholder="Votre critique..."></textarea>
                 <button type="submit">Envoyer</button>
             </form>
@@ -75,7 +76,7 @@
                                 </form>
                             @endif
                             <!-- supprimer critique -->
-                            @can("update",$critique )
+                            @can("update", $critique)
                                 <a href="{{ route('critique.edit', ['id' => $critique->id_critique]) }}">Modifier</a>
                                 <form action="{{ route('critique.delete', ['id' => $critique->id_critique]) }}" method="post"
                                     style="display:inline;">

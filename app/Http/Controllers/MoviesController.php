@@ -208,9 +208,11 @@ class MoviesController extends Controller
             ->get();
 
         $userLikedCritiques = [];
-
+        $userId = null;
+        
         if (Auth::check()) {
             $userId = Auth::user()->user_id;
+            
 
             // Récupérer tous les likes de l'utilisateur pour les critiques de ce film
             $liked = Like::where('user_id', $userId)
@@ -224,12 +226,13 @@ class MoviesController extends Controller
         if ($movie->slug !== $slug) {
             return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id]);
         }
-
+        
         return view('show', [
             'movie' => $movie,
             'categories' => Categories::all(),
             'critiques' => $critiques,
-            'userLikedCritiques' => $userLikedCritiques
+            'userLikedCritiques' => $userLikedCritiques,
+            'userId' => $userId,
         ]);
     }
 }
