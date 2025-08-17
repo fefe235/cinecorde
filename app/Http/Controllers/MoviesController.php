@@ -6,6 +6,7 @@ use App\Models\Categories;
 use App\Models\Critiques;
 use App\Models\Like;
 use App\Models\movies;
+use App\Models\TmdbService;
 use App\Models\User;
 use Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -17,8 +18,9 @@ use Illuminate\Support\Str;
 class MoviesController extends Controller
 {
     use AuthorizesRequests;
-    public function index()
-    {
+    public function index(TmdbService $tmdbService)
+    {   
+        
         //classer par note
         $movies = Movies::orderBy('avg_note', 'desc')->paginate(25);
         return view('home', [
@@ -140,17 +142,14 @@ class MoviesController extends Controller
                 return redirect()->route('movies')->with('error', 'Erreur lors de la récupération des catégories.');
             }
 
-
-            $category = Categories::all();
-
             $genreIds = [];
             if (!empty($tmdbMovie['genres'])) {
                 foreach ($tmdbMovie['genres'] as $genre) {
                     $category = Categories::firstOrCreate(
-                        ['id_cat' => $genre['id']],
-                        ['title_cat' => $genre['name'] ?? 'Inconnu']
+                        ['title_cat' => $genre['name']], // identifiant stable
+                        ['id_cat' => $genre['id']]       // facultatif, juste pour info
                     );
-                    $genreIds[] = $category->id_cat; // ID interne (auto-increment) de la table categories
+                    $genreIds[] = $category->id_cat;
                 }
             }
             // Enregistrer le film
@@ -187,6 +186,7 @@ class MoviesController extends Controller
             ]);
 
             // Associer les catégories au film
+            $genreIds = array_unique($genreIds);
             $movie->categories()->sync($genreIds); // ou ->attach($genreIds) si création initiale
 
             // 8. Enregistrement du film

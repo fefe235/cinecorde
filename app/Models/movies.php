@@ -16,11 +16,13 @@ class Movies extends Model
     public function categories()
     {
         return $this->belongsToMany(
-            categories::class,
-            'category_movie',
-            'id_movie',
-            'id_cat'
-        );
+            Categories::class,    // classe exacte
+            'category_movie',     // table pivot
+            'id_movie',           // clé étrangère du modèle courant
+            'id_cat'              // clé étrangère du modèle lié
+        )
+        ->select('categories.id_cat', 'categories.title_cat')
+        ->distinct();
     }
 
     public function critiques()

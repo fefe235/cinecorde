@@ -10,12 +10,13 @@ class Categories extends Model
     public function movies()
     {
         return $this->belongsToMany(
-            movies::class,      // Modèle cible
-            'category_movie',   // Table pivot
-            'id_cat',           // Clé étrangère vers categories dans la table pivot
-            'id_movie' 
-                     // Clé étrangère vers movies dans la table pivot
-        );
+            Movies::class,
+            'category_movie',
+            'id_cat',
+            'id_movie'
+        )->select('movies.id_movie', 'movies.movie_title', 'movies.slug', 'movies.image', 'movies.avg_note')
+         ->distinct();
     }
+    
 
 }

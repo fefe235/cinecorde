@@ -13,13 +13,14 @@
                 @if($movie->trailler)
                     <p><a href="{{ $movie->trailler }}" target="_blank">🎬 Voir la bande-annonce</a></p>
                 @endif
+                @auth
                 <form action="{{ route('movies.favorite', $movie->id_movie) }}" method="POST">
                     @csrf
                     <button type="submit">
                         {{ auth()->user()->favoriteMovies->contains($movie->id_movie) ? '💔' : '❤️' }}
                     </button>
                 </form>
-
+                @endauth
                 @can('delete', $movie)
                     <form action="{{ route('movies.delete', $movie, $movie->id) }}" method="POST">
                         @csrf

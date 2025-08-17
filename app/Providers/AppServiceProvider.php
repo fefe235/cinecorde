@@ -6,6 +6,7 @@ use App\Models\Critiques;
 use App\Models\Movies;
 use App\Models\News;
 use App\Models\User;
+use App\Services\TmdbService;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,7 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(TmdbService::class, function () {
+            return new TmdbService();
+        });
     }
 
     /**

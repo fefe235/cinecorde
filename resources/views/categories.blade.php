@@ -1,34 +1,36 @@
 @extends('layout.app')
-@section('title', 'Catégories - Cinecorde')
 
 @section('content')
+
 @if ($categoriesWithMovies)
-<header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-around py-3 mb-4 border-bottom">
-<ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
 
-        @foreach ($categoriesWithMovies as $category )
-
-        <li>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+<div class="d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary" style="width: 280px;">
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+      <svg class="bi pe-none me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
+      <span class="fs-4">Categories</span>
+    </a>
+    <hr>
+    <ul class="nav nav-pills flex-column">
+    @foreach ($categoriesWithMovies as $category )
+      <li class="nav-item">
                 <a href="?id={{ $category->id_cat }}" 
                 class="nav-link px-2 {{ request('id') == $category->id_cat ? 'fw-bold text-primary' : '' }}">
                     {{ $category->title_cat }}
                 </a>
-            </li>
-
             
-        @endforeach
-
-        </ul>
-</header>
-@endif
+      </li>
+      @endforeach
+    </ul>
+  </div>
+  @endif
     <!-- 🔹 Affichage des films -->
 @if (isset($filteredMovies) && $filteredMovies->count())
-    <h2>Films dans la catégorie : <strong>{{ $categoriesWithMovies->firstWhere('id_cat', $selectedCategoryId)?->title_cat }}</strong></h2>
 
-    <div class="row row-cols-1 row-cols-md-3 g-4">
+    
         @foreach ($filteredMovies as $movie)
             <div class="col">
-                <div class="card h-100">
+                <div class="card h-10">
                     <img src="{{ asset($movie->image) }}" class="card-img-top" alt="{{ $movie->movie_title }}">
                     <div class="card-body">
                         <h5 class="card-title">{{ $movie->movie_title }} ({{ $movie->year }})</h5>

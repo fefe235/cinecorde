@@ -12,12 +12,12 @@ return new class extends Migration {
     {
         Schema::create('category_movie', function (Blueprint $table) {
             $table->unsignedBigInteger('id_movie');
-    $table->unsignedBigInteger('id_cat');
+            $table->unsignedBigInteger('id_cat');
 
-    $table->foreign('id_movie')->references('id_movie')->on('movies')->onDelete('cascade');
-    $table->foreign('id_cat')->references('id_cat')->on('categories')->onDelete('cascade');
+            $table->foreign('id_movie')->references('id_movie')->on('movies')->onDelete('cascade');
+            $table->foreign('id_cat')->references('id_cat')->on('categories')->onDelete('cascade');
 
-    $table->primary(['id_movie', 'id_cat']); // clé primaire composite
+            $table->primary(['id_movie', 'id_cat']); // clé primaire composite
         });
     }
 
