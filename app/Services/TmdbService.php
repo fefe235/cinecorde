@@ -17,6 +17,16 @@ class TmdbService
         $this->apiKey = config('services.tmdb.key');
     }
 
+    public function searchMovie(string $query): array
+    {
+        $response = Http::get("https://api.themoviedb.org/3/search/movie", [
+            'query' => $query,
+            'language' => 'fr-FR',
+            'api_key' => $this->apiKey,
+        ]);
+
+        return $response->json()['results'][0] ?? [];
+    }
     public function searchMovies(string $query): array
     {
         $response = Http::get("https://api.themoviedb.org/3/search/movie", [
@@ -58,6 +68,18 @@ class TmdbService
         $trailer = collect($videoResponse->json()['results'] ?? [])->firstWhere('type', 'Trailer');
         return $trailer ? 'https://www.youtube.com/watch?v=' . $trailer['key'] : null;
     }
+    // public function getGenre(int $id): ?string
+    // {
+    //     $genreResponse = Http::get('https://api.themoviedb.org/3/genre/movie/list', [
+    //         'api_key' => $this->apiKey,
+    //         'language' => 'fr-FR',
+    //     ]);
+
+    //     if ($genreResponse->failed()) {
+    //         return redirect()->route('movies')->with('error', 'Erreur lors de la récupération des catégories.');
+    //     }
+    //     return $genreResponse;
+    // }
 
     public function savePoster(string $title, ?string $path): ?string
     {

@@ -6,7 +6,7 @@ use App\Models\Categories;
 use App\Models\Critiques;
 use App\Models\Like;
 use App\Models\movies;
-use App\Models\TmdbService;
+use App\Services\TmdbService;
 use App\Models\User;
 use Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
 class MoviesController extends Controller
 {
     use AuthorizesRequests;
-    public function index(TmdbService $tmdbService)
+    public function index()
     {   
         
         //classer par note
@@ -38,7 +38,7 @@ class MoviesController extends Controller
         }
     }
 
-    public function autocomplete(Request $request)
+    public function autocomplete(Request $request,TmdbService $tmdbService)
     {
         //stoctk ce que a saisi l'utilisateur
         $query = $request->get('query');
@@ -47,18 +47,8 @@ class MoviesController extends Controller
             return response()->json([]);
         }
 
-        $apiKey = config('services.tmdb.key');
 
-        //execute une requette http pour faire une recherche a partir de ce que l'utilisateur a saisi
-        $response = Http::get('https://api.themoviedb.org/3/search/movie', [
-            'api_key' => $apiKey,
-            'query' => $query,
-            'language' => 'fr-FR',
-            'page' => 1,
-            'include_adult' => false,
-        ]);
-        //stock les résultat dans un fichier json
-        $results = $response->json()['results'] ?? [];
+        $results= $tmdbService->searchMovies($query);
 
         $movies = array_map(function ($movie) {
             return [
@@ -71,23 +61,18 @@ class MoviesController extends Controller
         return response()->json($movies);
     }
 
-    public function storeFromSearch(Request $request)
+    public function storeFromSearch(Request $request, TmdbService $tmdbService)
     {
         $query = $request->input('query');
         $id = $request->input('id');
-        $tmdbApiKey = config('services.tmdb.key');
+        
 
 
         //  Si aucun ID, on cherche par nom
         if (empty($id) && $query) {
-            $searchResponse = Http::get("https://api.themoviedb.org/3/search/movie", [
-                'query' => $query,
-                'language' => 'fr-FR',
-                'api_key' => $tmdbApiKey,
-            ]);
 
 
-            $firstResult = $searchResponse->json()['results'][0] ?? null;
+            $firstResult = $tmdbService->searchMovie($query) ?? null;
             if (empty($firstResult)) {
                 return redirect()->route('movies')->with('error', 'Film non trouvé.');
             }
@@ -97,16 +82,8 @@ class MoviesController extends Controller
         $ifmovieid = Movies::where('tmdb_id', $id)->first();
         // Récupérer le film par son ID
         if (empty($ifmovieid)) {
-            $response = Http::get("https://api.themoviedb.org/3/movie/{$id}", [
-                'language' => 'fr-FR',
-                'api_key' => $tmdbApiKey,
-            ]);
-
-            if ($response->failed()) {
-                return redirect()->route('movies')->with('error', 'Erreur lors de la récupération du film.');
-            }
-
-            $tmdbMovie = $response->json();
+      
+            $tmdbMovie = $tmdbService->getMovieById($id);
             //  Vérification de doublon
             $existing = Movies::where('tmdb_id', $tmdbMovie['id'])->first();
             if (isset($existing)) {
@@ -115,32 +92,14 @@ class MoviesController extends Controller
             }
 
             //  Récupérer le casting
-            $castResponse = Http::get("https://api.themoviedb.org/3/movie/{$tmdbMovie['id']}/credits", [
-                'api_key' => $tmdbApiKey,
-                'language' => 'fr-FR',
-            ]);
-            $cast = collect($castResponse->json()['cast'] ?? [])->take(5)->pluck('name')->join(', ');
+           
+            $cast = $tmdbService->getCast($id);
 
             // Récupérer la bande-annonce
-            $videoResponse = Http::get("https://api.themoviedb.org/3/movie/{$tmdbMovie['id']}/videos", [
-                'api_key' => $tmdbApiKey,
-                'language' => 'fr-FR',
-            ]);
-            $trailer = collect($videoResponse->json()['results'] ?? [])->firstWhere('type', 'Trailer');
-            $trailerUrl = $trailer ? 'https://www.youtube.com/watch?v=' . $trailer['key'] : null;
+            $trailerUrl = $tmdbService->getTrailer($id);
 
 
             //  Catégorie principale du film (ou catégorie par défaut si absente)
-            $firstGenreId = null;
-
-            $genreResponse = Http::get('https://api.themoviedb.org/3/genre/movie/list', [
-                'api_key' => $tmdbApiKey,
-                'language' => 'fr-FR',
-            ]);
-
-            if ($genreResponse->failed()) {
-                return redirect()->route('movies')->with('error', 'Erreur lors de la récupération des catégories.');
-            }
 
             $genreIds = [];
             if (!empty($tmdbMovie['genres'])) {
@@ -154,25 +113,8 @@ class MoviesController extends Controller
             }
             // Enregistrer le film
             // Construire l'URL de l'image (poster)
-            $storeImageUrl = 'https://image.tmdb.org/t/p/w500' . $tmdbMovie['poster_path'];
-
-            // Téléchargement de l'image
-            $response = Http::get($storeImageUrl);
-
-            // Vérifier que l’image a bien été récupérée
-            if ($response->successful()) {
-                // Nettoyer le titre du film pour en faire un nom de fichier correct
-                $safeFilename = Str::slug($tmdbMovie['title'] ?? 'image') . '.jpg';
-
-                // Stocker l’image dans le dossier "storage/app/public/posters"
-                $success = Storage::disk('public')->put("posters/{$safeFilename}", $response->body());
-
-                // Chemin web vers l’image
-                $posterPath = $success ? "storage/posters/{$safeFilename}" : null;
-            } else {
-                $posterPath = null;
-            }
-
+            $posterPath = $tmdbService->savePoster($tmdbMovie['title'],$tmdbMovie['poster_path']);
+            
             $movie = Movies::create([
                 'tmdb_id' => $tmdbMovie['id'],
                 'slug' => Str::slug($tmdbMovie['title'] ?? "titre"),
