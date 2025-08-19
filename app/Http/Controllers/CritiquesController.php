@@ -52,8 +52,8 @@ class CritiquesController extends Controller
             ]);
 
             // Incrémente le compteur de like dans la critique
-            Critiques::where('id_critique', $id_critique)->increment('nbr_like');
-            User::where('user_id', Auth::user()->user_id)->increment('nbr_like_total');
+            Critiques::where('id_critique', $id_critique )->increment('nbr_like');
+            User::where('user_id', $id_critique)->increment('nbr_like_total');
         }
         $this->updateAllRanks();
         return back();

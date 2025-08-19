@@ -73,7 +73,7 @@ class MoviesController extends Controller
 
 
             $firstResult = $tmdbService->searchMovie($query) ?? null;
-            if (empty($firstResult)) {
+            if (empty($firstResult)|| empty($firstResult['poster_path'])) {
                 return redirect()->route('movies')->with('error', 'Film non trouvé.');
             }
 

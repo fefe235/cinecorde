@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\News;
+use App\Services\TmdbService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Http;
 
@@ -12,11 +13,11 @@ class NewsController extends Controller
     public function index()
     {
         $news = News::all();
-        $news2= News::class;
-        return view('news', ['news' => $news,'news2'=>$news2]);
+        $newsClass= News::class;
+        return view('news', ['news' => $news,'newsClass'=>$newsClass]);
     }
 
-    public function create()
+    public function create(TmdbService $tmdbService)
     {
         // Vérifie l'autorisation de créer une actualité
         $this->authorize('create', News::class);
@@ -24,13 +25,8 @@ class NewsController extends Controller
         // Supprimer toutes les actualités existantes
         News::truncate(); // Plus efficace que foreach + delete
 
-        // Récupérer les films tendances depuis l'API
-        $response = Http::get('https://api.themoviedb.org/3/trending/movie/week', [
-            'api_key' => config('services.tmdb.key'),
-            'language' => 'fr-FR'
-        ]);
-
-        $films = $response->json()['results'] ?? [];
+        
+        $films = $tmdbService->getNews() ;
 
         // Ajouter les nouvelles actualités
         foreach ($films as $film) {

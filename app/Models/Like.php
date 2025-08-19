@@ -9,6 +9,6 @@ class Like extends Model
     protected $fillable = ['user_id', 'critique_id'];
     public function critique()
 {
-    return $this->belongsTo(Critique::class, 'critique_id');
+    return $this->belongsTo(Critiques::class, 'critique_id');
 }
 }

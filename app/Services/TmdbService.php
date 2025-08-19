@@ -108,4 +108,15 @@ class TmdbService
         }
         return $ids;
     }
+    public function getNews(): ?array
+    {
+        // Récupérer les films tendances depuis l'API
+        $response = Http::get('https://api.themoviedb.org/3/trending/movie/week', [
+            'api_key' => $this->apiKey,
+            'language' => 'fr-FR'
+        ]);
+
+
+        return $response->json()['results'] ?? [] ;
+    }
 }
