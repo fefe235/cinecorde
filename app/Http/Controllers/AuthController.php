@@ -61,6 +61,7 @@ class AuthController extends Controller
             'role' => 'user',
             'nbr_like_total' => 0,
             'bool_like' => '0',
+            'rank'=> User::all()->count()+1,
             'password' => Hash::make($request->input("password"))
         ]);
         return redirect()->route('auth.login');
@@ -89,6 +90,7 @@ class AuthController extends Controller
             'isAdmin' => $request->input('role'),
             'nbr_like_total' => 0,
             'bool_like' => '0',
+            'rank'=> User::all()->count()+1,
             'password' => Hash::make($request->input("password"))
         ]);
         return back()->with('success', 'Nouvel admin ajouté avec succès.');
@@ -145,6 +147,8 @@ class AuthController extends Controller
                     'name' => $googleUser->getName(),
                     'password' => bcrypt(uniqid()), // mot de passe aléatoire
                     'nbr_like_total' => 0,
+                    'role' => 'user',
+                    'rank'=> User::all()->count()+1,
                     'bool_like' => 0,
                 ]
             );
@@ -162,7 +166,7 @@ class AuthController extends Controller
 
         // Optionnel : autorisation (admin seulement ?)
         $this->authorize("delete", $user);
-
+        $user->critiques()->delete(); // supprime ses critiques
         $user->delete();
 
         return redirect()->route('top_critique')->with('success', 'Utilisateur supprimé.');

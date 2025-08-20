@@ -91,4 +91,6 @@
             @endforeach
         @endif
     </div>
+     <!-- Pagination -->
+ <div class="align-center">{{ $critiques->links() }}</div>
 @endsection

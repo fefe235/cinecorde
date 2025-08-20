@@ -146,8 +146,8 @@ class MoviesController extends Controller
 
         // Récupérer toutes les critiques du film avec les relations
         $critiques = Critiques::with(['user', 'likes'])
-            ->where('id_movie', $movie->id_movie)
-            ->get();
+            ->where('id_movie', $movie->id_movie)->orderBy('nbr_like','desc')
+            ->paginate(50);
 
         $userLikedCritiques = [];
         $userId = null;

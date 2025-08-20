@@ -18,8 +18,8 @@ class CritiquesController extends Controller
         $userId = Auth::id();
 
         // Trouver le like existant pour cette critique et cet utilisateur
-        $like = Like::where('critique_id', $id_critique)
-            ->where('user_id', $userId)
+        $like = Like::where('critique_id', "=",$id_critique)
+            ->where('user_id', "=",$userId)
             ->first();
 
         if ($like) {
@@ -29,7 +29,7 @@ class CritiquesController extends Controller
             $critique = Critiques::find($id_critique);
             if ($critique && $critique->nbr_like > 0) {
                 $critique->decrement('nbr_like');
-                User::where('user_id', Auth::user()->user_id)->decrement('nbr_like_total');
+                User::where('user_id', "=", Critiques::where('id_critique',"=",$id_critique)->value('id_user'))->decrement('nbr_like_total');
             }
         }
         $this->updateAllRanks();
@@ -41,8 +41,8 @@ class CritiquesController extends Controller
         $userId = auth()->user()->user_id;
 
         // Vérifie si ce user a déjà liké cette critique
-        $alreadyLiked = Like::where('user_id', $userId)
-            ->where('critique_id', $id_critique)
+        $alreadyLiked = Like::where('user_id', "=", $userId)
+            ->where('critique_id', "=", $id_critique)
             ->exists();
 
         if (!$alreadyLiked) {
@@ -52,8 +52,8 @@ class CritiquesController extends Controller
             ]);
 
             // Incrémente le compteur de like dans la critique
-            Critiques::where('id_critique', $id_critique )->increment('nbr_like');
-            User::where('user_id', $id_critique)->increment('nbr_like_total');
+            Critiques::where('id_critique', "=", $id_critique)->increment('nbr_like');
+            User::where('user_id', "=", Critiques::where('id_critique',"=",$id_critique)->value('id_user'))->increment('nbr_like_total');
         }
         $this->updateAllRanks();
         return back();
@@ -137,7 +137,7 @@ class CritiquesController extends Controller
     {
         $critique = Critiques::findOrFail($id);
         $this->authorize('delete',$critique);
-        $movie = Movies::where('id_movie', $critique->id_movie)->firstOrFail();
+        $movie = Movies::where('id_movie',"=" ,$critique->id_movie)->firstOrFail();
         //supprimer crtique
             if ($critique->delete()) {
                 return to_route('movies.show', ['slug' => $movie->slug, 'tmdb_id' => $movie->tmdb_id])

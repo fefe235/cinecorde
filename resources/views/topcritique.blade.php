@@ -36,35 +36,41 @@
 
   <!-- Liste utilisateurs avec accordéon Alpine.js -->
   <div class="container">
-    <ol class="top-critique-list list-decimal pl-4">
-      @foreach($users as $user)
-      <li class="top-critique-item mb-3" x-data="{ open: false }">
-        <div 
-          class="flex justify-between items-center cursor-pointer bg-light p-2 rounded"
-          @click="open = !open"
-          :aria-expanded="open.toString()"
-          aria-controls="user-{{ $user->user_id }}"
-          role="button"
-          tabindex="0"
-          @keydown.enter="open = !open"
-          @keydown.space.prevent="open = !open"
-        >
-          <div>
-            <span class="top-critique-rank font-bold mr-2">#{{ $user->rank }}</span>
-            <span class="font-semibold">{{ $user->name }}</span>
-          </div>
-          <div class="text-gray-700">
-            {{ $user->nbr_like_total }} like{{ $user->nbr_like_total > 1 ? 's' : '' }}
-          </div>
+  <ol class="top-critique-list list-decimal pl-4">
+    @foreach($users as $user)
+    <li class="top-critique-item mb-3" x-data="{ open: false }">
+      <div 
+        class="d-flex justify-content-between align-items-center cursor-pointer bg-light p-2 rounded"
+        @click="open = !open"
+        :aria-expanded="open.toString()"
+        aria-controls="user-{{ $user->user_id }}"
+        role="button"
+        tabindex="0"
+        @keydown.enter="open = !open"
+        @keydown.space.prevent="open = !open"
+      >
+        <div>
+          <span class="top-critique-rank fw-bold me-2">#{{ $user->rank }}</span>
+          <span class="fw-semibold">{{ $user->name }}</span>
         </div>
 
-        <div
-          x-show="open"
-          x-transition
-          id="user-{{ $user->user_id }}"
-          class="mt-2 ml-4"
-          style="display: none;"
-        >
+        <div class="d-flex align-items-center">
+          <span class="me-2 text-secondary">
+            {{ $user->nbr_like_total }} like{{ $user->nbr_like_total > 1 ? 's' : '' }}
+          </span>
+          <!-- Icône flèche Bootstrap -->
+          <i class="bi bi-chevron-right transition"
+             :class="open ? 'rotate-90' : ''"></i>
+        </div>
+      </div>
+
+      <div
+        x-show="open"
+        x-transition
+        id="user-{{ $user->user_id }}"
+        class="mt-2 ms-4"
+        style="display: none;"
+      >
           @if($user->favoriteMovies->isEmpty())
             <p><em>Aucun favori.</em></p>
           @else
@@ -109,6 +115,7 @@
       @endforeach
     </ol>
   </div>
+  
 
   <div class="align-center mt-4">
     {{ $users->appends(request()->query())->links() }}
